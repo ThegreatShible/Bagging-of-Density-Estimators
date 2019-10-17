@@ -20,7 +20,8 @@ simulaciones=function(n=100,M=10,B=150){
     bopt=bropt(dd$train)$opt
     zz=hist(dd$train,breaks=mybreaks(dd$train,nbr=bopt),plot=F)
     
-    bhist=BagHistfp(xx=dd$train,grille=dd$test,nbr = bopt, B)
+    #bhist=BagHistfp(xx=dd$train,grille=dd$test,nbr = bopt, B)
+    bhist=BagHistfp(xx=dd$train,grille=dd$test, B)
     modelrash=rash(dd$train,grille=dd$test,nbr = bopt, B)
     #modelavshift(dd$train,dd$test,nbr=bopt,M=B)
     modelbagkde <- Bagkde(xx = dd$train, grille = dd$test, B)
