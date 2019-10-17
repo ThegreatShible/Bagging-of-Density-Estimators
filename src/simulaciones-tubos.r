@@ -159,8 +159,8 @@ simulaciones = function(n = 100,    # data size
                         B = 150){   # number of bootstrapt samples
   estimators <- c("Hist", "FP", "Kde", "Kde_sm", "Kde_M") #, "wass")
   densities  <- c("normal", "chi2", "mix1", "bart", "triangular", "rara1", "rara2", "rara3")
-
-  res <- foreach(i = 1:M, .combine = rbind.data.frame, .packages = "sm") %:% 
+  var2export <- c("gendata", "tube_hist", "mybreaks", "predict.hist", "predict.hist.x")
+  res <- foreach(i = 1:M, .combine = rbind.data.frame,.export = var2export,.packages = "sm") %:% 
     foreach(ll = c(1, 3, 5, 8, 11, 13, 20, 21), .combine = rbind) %dopar% {
 
       dd   <- gendata(ll, n)
