@@ -157,9 +157,14 @@ sesgo_par = function(n = 100, M = 5, K = 10, B = 10){
 }
 
 library(doParallel)
+#Rprof()
 cl <- makeCluster(8)
 registerDoParallel(cl)
+#system.time(aa <- sesgo_par())
 system.time(aa <- sesgo_par(n = 500, B = 200, K = 100, M = 100))
+stopCluster(cl)
+#Rprof(NULL)
+#summaryRprof()
 #system.time(aa <- sesgo_par(n = 500, B = 10, K = 5, M = 100))
 
 save(aa, file = "resultados_descomposicion.Rdata")
