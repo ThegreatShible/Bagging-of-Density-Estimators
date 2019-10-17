@@ -1,4 +1,6 @@
 library(parallel)
+library(ks)
+
 
 source("functions2.r")
 
