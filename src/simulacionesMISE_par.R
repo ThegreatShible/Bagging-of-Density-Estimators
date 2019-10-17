@@ -44,10 +44,10 @@ simulaciones=function(n=100,M=10,B=150){
 }
 
 cls <- makeCluster(detectCores() - 1)
-vars2export <- c("BagHistfp", "Bagkde", "bropt", "dtriangle", "error", "gendata",         
+vars2export <- c("BagHistfp", "Bagkde", "bropt", "broptfp", "dtriangle", "error", "gendata",         
                 "mel", "melange", "mybreaks", "onekdeucv",
                 "predict.hist", "predict.hist.x",   "rash", 
-                "riskhist", "rtriangle", "simulaciones")   
+                "riskfp", "riskhist", "rtriangle", "simulaciones")   
 clusterExport(cls, vars2export)
 
 system.file(
