@@ -1,6 +1,6 @@
 library(parallel)
 
-source("functions.r")
+source("functions2.r")
 
 simulaciones=function(n=100,M=10,B=150){
  
