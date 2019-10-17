@@ -15,28 +15,28 @@ simulaciones=function(n=100,M=10,B=150){
       
     A=matrix(NA,nrow=6,ncol=7)
     j=1
-    for(ll in c(1,3,5,7,8,11)){
+    for(nummodel in c(1,3,5,7,8,11)){
       
-      dd=gendata(ll,n)
-      bopt=bropt(dd$train)$opt
-      zz=hist(dd$train,breaks=mybreaks(dd$train,nbr=bopt),plot=F)
+      sample=gendata(nummodel,n)
+      bopt=bropt(sample$train)$opt
+      zz=hist(sample$train,breaks=mybreaks(sample$train,nbr=bopt),plot=F)
       
-      #bhist=BagHistfp(xx=dd$train,grille=dd$test,nbr = bopt, B)
-      bhist=BagHistfp(xx=dd$train,grille=dd$test, B)
-      modelrash=rash(dd$train,grille=dd$test,nbr = bopt, B)
-      #modelavshift(dd$train,dd$test,nbr=bopt,M=B)
-      modelbagkde <- Bagkde(xx = dd$train, grille = dd$test, B)
+      #bhist=BagHistfp(xx=sample$train,grille=sample$test,nbr = bopt, B)
+      bhist=BagHistfp(xx=sample$train,grille=sample$test, B)
+      modelrash=rash(sample$train,grille=sample$test,nbr = bopt, B)
+      #modelavshift(sample$train,sample$test,nbr=bopt,M=B)
+      modelbagkde <- Bagkde(xx = sample$train, grille = sample$test, B)
       
-      A[j,]=c(error(dd$dobs,predict.hist(zz,dd$test))[1],
-               error(dd$dobs,approxfun(x=zz$mids,y=zz$density)(dd$test))[1],    
-               error(dd$dobs,onekdeucv(dd$train,dd$test))[1],
-               error(dd$dobs,bhist$bh)[1],
-               error(dd$dobs,bhist$bhfp)[1], 
-               #error(dd$dobs,modelavshift)[1]
-               error(dd$dobs,modelbagkde)[1],
-               error(dd$dobs,modelrash)[1] )
+      A[j,]=c(error(sample$dobs,predict.hist(zz,sample$test))[1],
+               error(sample$dobs,approxfun(x=zz$mids,y=zz$density)(sample$test))[1],    
+               error(sample$dobs,onekdeucv(sample$train,sample$test))[1],
+               error(sample$dobs,bhist$bh)[1],
+               error(sample$dobs,bhist$bhfp)[1], 
+               #error(sample$dobs,modelavshift)[1]
+               error(sample$dobs,modelbagkde)[1],
+               error(sample$dobs,modelrash)[1] )
       
-      #MISE[j,]=(dd$dobs-bhist$bhfp)^2 +
+      #MISE[j,]=(sample$dobs-bhist$bhfp)^2 +
       j=j+1
     }
     AA=AA+A
@@ -51,10 +51,11 @@ vars2export <- c("BagHistfp", "Bagkde", "bropt", "broptfp", "dtriangle", "error"
                 "riskfp", "riskhist", "rtriangle", "simulaciones")   
 clusterExport(cls, vars2export)
 
-system.file(
-res <- parLapplyLB(cls, rev(c(20, 50, 100, 200, 500, 1000, 2000)),
-              function(n) simulaciones(n = n, M = 100, B = 200))
-)
+res <- simulaciones(n = 20, M = 10, B = 20)
+res
+#res <- parLapplyLB(cls, rev(c(20, 50, 100, 200, 500, 1000, 2000)),
+#              function(n) simulaciones(n = n, M = 100, B = 200))
+#)
 
 stopCluster(cls)
 
