@@ -1,10 +1,13 @@
-
+library("foreach")
+library("iterators")
+library("parallel")
 rm(list = ls())
-source("functions2.R")
 
+#B nombre d'echantillonage pour le bagging
+# M nombre de décomposition du dataset avec chaque partie contenant n elements
 sesgo_par = function(n = 100, M = 5, K = 10, B = 10){
 
-    res0 <- foreach::foreach(ll = c(1, 3, 5, 8, 11, 13, 20, 21), .combine = rbind, 
+    res0 <- foreach::foreach(numModel = c(1, 3, 5, 8, 11, 13, 20, 21), .combine = rbind, 
                             .export = c("gendata", "bropt", "riskhist", "mybreaks", 
                                         "broptfp", "riskfp", "ind",
                                         "predict.hist", "predict.hist.x", "onekdeucv",
@@ -14,16 +17,18 @@ sesgo_par = function(n = 100, M = 5, K = 10, B = 10){
                              
   res = matrix(0, nrow = 1, ncol = 21)
    for (m in 1:M) {
-     dd=gendata(ll,n)
-     bopt=bropt(dd$train)$opt
-     zz=hist(dd$train,breaks=mybreaks(dd$train,nbr=bopt),plot=F)
-     h=predict.hist(zz,dd$test)
-     fp=approxfun(x=zz$mids,y=zz$density)(dd$test)
-     kde=onekdeucv(dd$train,dd$test)
-     estim1=BagHistfp(xx=dd$train,grille=dd$test, B)$bhfp
-     estim2=BagHistfp(xx=dd$train,grille=dd$test, B)$bh
-     estim3=Bagkde(xx=dd$train,grille=dd$test,B)
-     estim4=rash(xx=dd$train,grille=dd$test, nbr=bopt,B)
+     distributionData =gendata(numModel,n)
+     #optimal number of chunks in the histogram
+     bopt=bropt(distributionData$train)$opt
+     histogram=hist(distributionData$train,breaks=mybreaks(distributionData$train,nbr=bopt),plot=F)
+     #O(distributionData.length * histogram.breaks)
+     h=predict.hist(histogram,distributionData$test)
+     fp=approxfun(x=histogram$mids,y=histogram$density)(distributionData$test)
+     kde=onekdeucv(distributionData$train,distributionData$test)
+     estim1=BagHistfp(xx=distributionData$train,grille=distributionData$test, B)$bhfp
+     estim2=BagHistfp(xx=distributionData$train,grille=distributionData$test, B)$bh
+     estim3=Bagkde(xx=distributionData$train,grille=distributionData$test,B)
+     estim4=rash(xx=distributionData$train,grille=distributionData$test, nbr=bopt,B)
      
      finalh=0
      finalh_b=0
@@ -48,36 +53,36 @@ sesgo_par = function(n = 100, M = 5, K = 10, B = 10){
      
      for (k in 1:K){
        #if(k%%20 == 0) cat(k,">>")
-       ddk=gendata(ll,n)
-       bopt=bropt(ddk$train)$opt
+       sample=gendata(numModel,n)
+       bopt=bropt(sample$train)$opt
        # -- Histogram
-       zz=hist(ddk$train,breaks=mybreaks(ddk$train,nbr=bopt),plot=F)
-       h=predict.hist(zz,dd$test)
+       histogram=hist(sample$train,breaks=mybreaks(sample$train,nbr=bopt),plot=F)
+       h=predict.hist(histogram,distributionData$test)
        # -- FP
-       fp=approxfun(x=zz$mids,y=zz$density)(dd$test)
+       fp=approxfun(x=histogram$mids,y=histogram$density)(distributionData$test)
        # KDE
-       kde=onekdeucv(ddk$train,dd$test)
+       kde=onekdeucv(sample$train,distributionData$test)
        
        # BagHist
-       estim2l=BagHistfp(xx=ddk$train,grille=dd$test,B)$bh
+       estim2l=BagHistfp(xx=sample$train,grille=distributionData$test,B)$bh
        
        # BagFP
-       estim1l=BagHistfp(xx=ddk$train,grille=dd$test,B)$bhfp
+       estim1l=BagHistfp(xx=sample$train,grille=distributionData$test,B)$bhfp
      
        #BagKde
-       estim3l=Bagkde(xx=ddk$train,grille=dd$test,B)
+       estim3l=Bagkde(xx=sample$train,grille=distributionData$test,B)
        
        #Rash
-       estim4l=rash(xx=ddk$train,grille=dd$test, nbr=bopt,B)
+       estim4l=rash(xx=sample$train,grille=distributionData$test, nbr=bopt,B)
        
-       finalh      = finalh      + (h - dd$dobs)^2
-       finalfp     = finalfp     + (fp - dd$dobs)^2 
-       finalkde    = finalkde    + (kde - dd$dobs)^2
+       finalh      = finalh      + (h - distributionData$dobs)^2
+       finalfp     = finalfp     + (fp - distributionData$dobs)^2 
+       finalkde    = finalkde    + (kde - distributionData$dobs)^2
        
-       finalbh   = finalbh   + (estim2l - dd$dobs)^2 
-       finalbhfp   = finalbhfp   + (estim1l - dd$dobs)^2 
-       finalbagkde = finalbagkde + (estim3l-dd$dobs)^2
-       finalrash = finalrash + (estim4l-dd$dobs)^2
+       finalbh   = finalbh   + (estim2l - distributionData$dobs)^2 
+       finalbhfp   = finalbhfp   + (estim1l - distributionData$dobs)^2 
+       finalbagkde = finalbagkde + (estim3l-distributionData$dobs)^2
+       finalrash = finalrash + (estim4l-distributionData$dobs)^2
        
        finalbh_b = finalbh_b + estim2l
        finalbagkde_b=finalbagkde_b + estim3l
@@ -108,32 +113,32 @@ sesgo_par = function(n = 100, M = 5, K = 10, B = 10){
      finalrash_b = finalrash_b/K
      
     res = res + c(mean(finalh                   , na.rm = T),
-                  mean((finalh_b - dd$dobs)^2   , na.rm = T),
+                  mean((finalh_b - distributionData$dobs)^2   , na.rm = T),
                   mean((h-finalh_b)^2           , na.rm = T),
                   
                    
                   mean(finalfp                  , na.rm = T),
-                  mean((finalfp_b - dd$dobs)^2  , na.rm = T),
+                  mean((finalfp_b - distributionData$dobs)^2  , na.rm = T),
                   mean((fp - finalfp_b)^2       , na.rm = T),
                  
                   mean(finalkde                 , na.rm = T),
-                  mean((finalkde_b - dd$dobs)^2 , na.rm = T),
+                  mean((finalkde_b - distributionData$dobs)^2 , na.rm = T),
                   mean((kde - finalkde_b)^2     , na.rm = T),
                   
                   mean(finalbh                   , na.rm = T),
-                  mean((finalbh_b - dd$dobs)^2   , na.rm = T),
+                  mean((finalbh_b - distributionData$dobs)^2   , na.rm = T),
                   mean((estim2-finalbh_b)^2      , na.rm = T),
                   
                   mean(finalbhfp                , na.rm = T),
-                  mean((finalbhfp_b - dd$dobs)^2, na.rm = T),
+                  mean((finalbhfp_b - distributionData$dobs)^2, na.rm = T),
                   mean((estim1 - finalbhfp_b)^2  , na.rm = T),
                   
                   mean(finalbagkde                 , na.rm = T),
-                  mean((finalbagkde_b - dd$dobs)^2 , na.rm = T),
+                  mean((finalbagkde_b - distributionData$dobs)^2 , na.rm = T),
                   mean((estim3 - finalbagkde_b)^2  , na.rm = T),
                   
                   mean(finalrash                 , na.rm = T),
-                  mean((finalrash_b - dd$dobs)^2 , na.rm = T),
+                  mean((finalrash_b - distributionData$dobs)^2 , na.rm = T),
                   mean((estim4 - finalrash_b)^2  , na.rm = T) )
    }
   

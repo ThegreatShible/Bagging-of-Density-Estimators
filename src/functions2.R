@@ -447,7 +447,7 @@ mybreaks = function(x = rnorm(100),nbr)
    seq(mx,Mx, (Mx-mx)/nbr)
 }
 
-
+#O(breaks)
 predict.hist.x = function(hh,x1)	{
 	breaks = hh$breaks
 	intens = hh$density
@@ -463,6 +463,7 @@ predict.hist.x = function(hh,x1)	{
 	res
 }
 
+#O(x * hh.breaks)
 predict.hist = function(hh,x)	{
 	res=NULL
 	for(i in 1:length(x))
