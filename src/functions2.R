@@ -816,7 +816,6 @@ BagHistfp = function(xx,grille=aa, B= 10) {
   list(bhfp=fin/B,bh=fin2/B)
 }
 
-
 BagHistfp.err = function(xx,grille=aa, B= 10,dobs) {
   # A chaque etape, on prend un nouveau jeu de donn?es, on construit un histogramme, on pr?dit et on agr?ge.
   #
