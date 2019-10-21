@@ -831,8 +831,11 @@ BagHistfp.err = function(xx,grille=aa, B= 10,dobs) {
   Mx = max(xx)
   for(i in 1:B)    {
     xb = xx[sample(n,replace=T)]
-    nbr=bropt(xb)$opt
-    nbrfp=broptfp(xb)$opt
+    bropts = bropt_gen(xb, types=c(1,2))
+    nbr = bropts[1]
+    nbrfp = bropts[2]
+    #nbr.old = bropt(xb)$opt
+    #nbrfp.old = broptfp(xb)$opt
     hs=hist(xb,breaks=mybreaks(xb,nbr),plot=F,warn.unused = F)
     hs2=hist(xb,breaks=mybreaks(xb,nbrfp),plot=F,warn.unused = F)
     m <- hs2$mids
