@@ -801,8 +801,11 @@ BagHistfp = function(xx,grille=aa, B= 10) {
   fin2=0
   for(i in 1:B)    {
     xb = xx[sample(n,replace=TRUE)]
-    nbr=bropt(xb)$opt
-    nbrfp=broptfp(xb)$opt
+    bropts = bropt_gen(xb, types=c(1,2))
+    nbr = bropts[1]
+    nbrfp = bropts[2]
+    #nbr.old = bropt(xb)$opt
+    #nbrfp.old = broptfp(xb)$opt
     hs=hist(xb,breaks=mybreaks(xb,nbr),plot=F,warn.unused = F)
     hs2=hist(xb,breaks=mybreaks(xb,nbrfp),plot=F,warn.unused = F)
     m <- hs2$mids
@@ -1763,6 +1766,30 @@ riskfp <- function(obs, m, xlim = c(0, 1)) {
   return(res) #(m * sum(p_hat^2))
 }
 
+risk <- function(obs, m, xlim = c(0, 1)) {
+  obs01  <- (obs - xlim[1]) / (xlim[2] - xlim[1])
+  h      <- 1 / m
+  n      <- length(obs)
+  breaks <- seq(0, 1, length.out = m + 1)
+  p_hat  <- hist(obs01, plot = FALSE, breaks = breaks, warn.unused = F)$counts
+  return(p_hat)
+}
+
+riskhist.new <- function(n, h, p_hat) {
+  
+  p  <- p_hat / n
+  
+  res <- 2 / h / (n - 1) - (n + 1) / (n - 1) / h * sum(p^2)
+  return(res) #(m * sum(p_hat^2))
+}
+
+riskfp.new <- function(n, h, p_hat) {
+  
+  vs <- cbind(c(0, 0, p_hat), c(0, - 2 * p_hat, 0), c(p_hat, 0, 0))
+  
+  res <- 271 / (480 * n * h) + 49 / (2880 * n^2 * h) * sum(rowSums(vs)^2)
+  return(res) #(m * sum(p_hat^2))
+}
 
 bropt=function(x){
   Mgrid <- 2:(5 * floor(sqrt(length(x))))
@@ -1774,6 +1801,7 @@ bropt=function(x){
   list(opt=Mgrid[which.min(J)])
 }
 
+
 broptfp = function(x){
   Mgrid <-  2:(5 * floor(sqrt(length(x)))) #2:200 modified to reduce computational burden 
   J     <- numeric(length(Mgrid))
@@ -1784,6 +1812,27 @@ broptfp = function(x){
   list(opt = max(5, Mgrid[which.min(J)]))
 }
 
+bropt_gen = function(x, types=c(1)) {
+  Mgrid <- 2:(5 * floor(sqrt(length(x))))
+  J     <- numeric(length(Mgrid))
+  res = matrix(NA, nrow=length(Mgrid), ncol=length(types))
+  for(m in seq_along(Mgrid)) {
+    r <- risk(x, Mgrid[m], xlim = c(min(x)-0.5, max(x)+0.5))
+    n = length(x)
+    h = 1/Mgrid[m]
+    i=1
+    for (t in types) {
+      if (t==1) {
+        res[m,i]  <- riskhist.new(n,h,r)
+      }
+      if (t==2) {
+        res[m,i]  <- riskfp.new(n,h,r)
+      }
+      i = i + 1
+    }
+  }
+  return(apply(res, 2, function(x) Mgrid[which.min(x)]))
+}
 
 baseboot <- function(x, punctual, bunch, conf = c(0.05, 0.95), plot = FALSE){  
   
