@@ -45,7 +45,7 @@ innerFunc <- function(n,M,K,B,numModel) {
     
     for (k in 1:K){
       #if(k%%20 == 0) cat(k,">>")
-      sample=gendata(numModel,n)
+      sample=onlyTrainGendata(numModel,n)
       bopt=bropt(sample$train)$opt
       # -- Histogram
       histogram=hist(sample$train,breaks=mybreaks(sample$train,nbr=bopt),plot=F)
@@ -141,6 +141,48 @@ innerFunc <- function(n,M,K,B,numModel) {
 
   
 }
+funcArray <- c(1:7)
+innerFunc2 <- function(n,M,K,B, numModel){
+  
+}
+
+Kfunc <- function(n,K, testArray, numModel){
+  #TODO implement funcArray, add rray package
+  
+  L <- length(testArray)
+  samples <- matrix(onlyTrainGendata(numModel,n*K), nrow=K, ncol=n)
+  predictions <- array(dim = c(7,K,L))
+  tests1 <- array(testArray, dim=c(1,1,L))
+  tests <-  rray_broadcast(tests1, c(7,K,L))
+  #Todo check if for is the solution
+  for (i in (1:length(funcArray))){
+    f <- funcArray(i)
+    funcRes <- f(samples)
+    predictions[i,,] <- funcRes
+  }
+  
+  
+  
+  
+  
+  
+  
+           
+  
+}
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+
+
 sesgo_par = function(n = 100, M = 5, K = 10, B = 10){
 
     res0 <- foreach::foreach(numModel = c(1, 3, 5, 8, 11, 13, 20, 21), .combine = rbind, 

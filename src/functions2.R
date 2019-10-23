@@ -270,7 +270,7 @@ onlyTrainGendata = function(nummodel=1, n=100) {
   }  
   
   
-  list(train=train)
+  train
   
 }
 
@@ -728,6 +728,31 @@ predict.hist = function(hh,x)	{
 	for(i in 1:length(x))
 		res[i] = predict.hist.x(hh,x[i])
 	res
+}
+
+getDensity <- function(x, densities) {
+  ind <- which(x) - 1
+  if( ind <= 0) return(0)
+  else densities[ind]
+  
+}
+
+predict.hist.x2D <- function(histrogram, x){
+  found = F
+  index = 1
+  L <- length(x)
+  breaks <- histogram$breaks
+  Blen <- length(breaks)
+  rBreaks <- matrix(v,nrow=Blen,ncol=L,byrow=TRUE)
+  densities <- histogram$density
+  mins <- (x <= breaks)
+  apply(mins, 1, function(x) getDensity(mins, densities))
+ 
+}
+
+predict.hist2D = function(histograms, x) {
+  
+  apply(histograms,1, function(histogram) predict.hist.x2D(histogram, x))
 }
 
 
@@ -2000,16 +2025,7 @@ rashfp.err = function(xx,grille=aa,nbr = 50, B= 10,dobs,alpha=1) {
 }
 
 
-riskhist <- function(obs, m, xlim = c(0, 1)) {
-  obs01  <- (obs - xlim[1]) / (xlim[2] - xlim[1])
-  h      <- 1 / m
-  n      <- length(obs)
-  breaks <- seq(0, 1, length.out = m + 1)
-  p_hat  <- hist(obs01, plot = FALSE, breaks = breaks, warn.unused = F)$counts / n
-  
-  res <- 2 / h / (n - 1) - (n + 1) / (n - 1) / h * sum(p_hat^2)
-  return(res) #(m * sum(p_hat^2))
-}
+
 
 riskfp <- function(obs, m, xlim = c(0, 1)) {
   obs01  <- (obs - xlim[1]) / (xlim[2] - xlim[1])
@@ -2024,6 +2040,72 @@ riskfp <- function(obs, m, xlim = c(0, 1)) {
   return(res) #(m * sum(p_hat^2))
 }
 
+riskfp2D <- function(obs,m, xlim){
+  require("gdata")
+  obs01  <- (obs - xlim[1]) / (xlim[2] - xlim[1])
+  h      <- 1 / m
+  n      <- length(obs)
+  breaks <- seq(0, 1, length.out = m + 1)
+  p_hat  <- hist(obs01, plot = FALSE, breaks = breaks, warn.unused = F)$counts
+  dim1 <- dim(p_hat)[1]
+  zeros <- matrix(0, nrow = dim1, byrow = T)
+  #TODO: this formula is false. or true ???
+  vs <- cbindX(zeros, zeros, p_hat, zeros, -2* p_hat, zeros, p_hat, zeros, zeros)
+  res <- 271 / (480 * n * h) + 49 / (2880 * n^2 * h) * sum(rowSums(vs)^2)
+}
+
+riskhist <- function(obs, m, xlim = c(0, 1)) {
+  obs01  <- (obs - xlim[1]) / (xlim[2] - xlim[1])
+  h      <- 1 / m
+  n      <- length(obs)
+  breaks <- seq(0, 1, length.out = m + 1)
+  p_hat  <- hist(obs01, plot = FALSE, breaks = breaks, warn.unused = F)$counts / n
+  res1 <- sum(p_hat^2)
+  
+  res <- 2 / h / (n - 1) - (n + 1) / (n - 1) / h * res1
+  return(res) #(m * sum(p_hat^2))
+}
+
+innFunc <- function(x,breaks){
+  y <- x
+  b <- breaks
+  count <- hist(y, plot=FALSE, b, warn.unused=F)$counts/n
+  squareCounts <- count^2
+  squareSum <- sum(squareCounts)
+  squareSum
+}
+
+
+riskhist2D <- function(x,m, xlim){
+   
+
+  dim2 <- dim(x)[2]
+  obs <-  x - xlim[,1]
+  diff <- xlim[,2] - xlim[,1]
+  obs01 <- obs / diff
+  h <- 1/m
+  n <- dim2
+  breaks <- seq(0, 1, length.out = m + 1)
+  p_hats <- apply(obs01, 1, function(x) innFunc(x, breaks))
+  
+  res <- 2 / h / (n - 1) - (n + 1) / (n - 1) / h * p_hats
+  return(res)
+}
+
+bropt2D <- function(x) {
+  require("Rfast")
+  
+  dim2 <- as.numeric(dim(x)[2])
+  dim1 <- dim(x)[1]
+  Mgrid <- 2:(5 * floor(sqrt(dim2)))
+  minMax <- rowMinsMaxs(x)
+  r <- vapply(c(-0.5, 0.5), function(x) rep(x, dim1), numeric(dim1))
+  xlim <- t(minMax)+ r
+  res <- sapply(Mgrid, function(m) riskhist2D(x,m, xlim))
+  Mgrid[rowMins(res)]
+
+}
+
 
 bropt=function(x){
   Mgrid <- 2:(5 * floor(sqrt(length(x))))
@@ -2034,6 +2116,22 @@ bropt=function(x){
   }
   list(opt=Mgrid[which.min(J)])
 }
+
+broptfp2D <- function(x) {
+  require("Rfast")
+  
+  dim2 <- as.numeric(dim(x)[2])
+  dim1 <- dim(x)[1]
+  Mgrid <- 2:(5 * floor(sqrt(dim2)))
+  minMax <- rowMinsMaxs(x)
+  r <- vapply(c(-0.5, 0.5), function(x) rep(x, dim1), numeric(dim1))
+  xlim <- t(minMax)+ r
+  res <- sapply(Mgrid, function(m) riskfp2D(x,m, xlim))
+  Mgrid[rowMins(res)]
+}
+
+
+
 
 broptfp = function(x){
   Mgrid <-  2:(5 * floor(sqrt(length(x)))) #2:200 modified to reduce computational burden 
