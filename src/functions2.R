@@ -2035,24 +2035,36 @@ riskfp <- function(obs, m, xlim = c(0, 1)) {
   p_hat  <- hist(obs01, plot = FALSE, breaks = breaks,warn.unused = F)$counts #/ n
   
   vs <- cbind(c(0, 0, p_hat), c(0, - 2 * p_hat, 0), c(p_hat, 0, 0))
+  res1 <- sum(rowSums(vs)^2)
   
-  res <- 271 / (480 * n * h) + 49 / (2880 * n^2 * h) * sum(rowSums(vs)^2)
+  res <- 271 / (480 * n * h) + 49 / (2880 * n^2 * h) * res1
   return(res) #(m * sum(p_hat^2))
 }
 
 riskfp2D <- function(obs,m, xlim){
   require("gdata")
-  obs01  <- (obs - xlim[1]) / (xlim[2] - xlim[1])
+  require("Rfast")
+  
+  dim2 <- dim(obs)[2]
+  obs <-  obs - xlim[,1]
+  diff <- xlim[,2] - xlim[,1]
+  obs01 <- obs / diff
   h      <- 1 / m
   n      <- length(obs)
   breaks <- seq(0, 1, length.out = m + 1)
-  p_hat  <- hist(obs01, plot = FALSE, breaks = breaks, warn.unused = F)$counts
-  dim1 <- dim(p_hat)[1]
-  zeros <- matrix(0, nrow = dim1, byrow = T)
-  #TODO: this formula is false. or true ???
-  vs <- cbindX(zeros, zeros, p_hat, zeros, -2* p_hat, zeros, p_hat, zeros, zeros)
-  res <- 271 / (480 * n * h) + 49 / (2880 * n^2 * h) * sum(rowSums(vs)^2)
+  p_hats <- apply(obs01, 1, function(x) hist(obs01, plot = FALSE, breaks = breaks,warn.unused = F)$counts)
+  dim1 <- dim(p_hats)[2]
+  zeros <- matrix(0, ncol=dim1)
+  t_p_hat <- p_hats
+  mat1 <- rbind.fill.matrix(zeros,zeros,t_p_hat)
+  mat2 <- rbind.fill.matrix(zeros, -2 * t_p_hat, zeros)
+  mat3 <- rbind.fill.matrix(t_p_hat, zeros,zeros)
+  f_mat<- (mat1 + mat2 + mat3)^2
+  sums <- colsums(f_mat)
+  res <- 271 / (480 * n * h) + 49 / (2880 * n^2 * h) * sums
+  res
 }
+
 
 riskhist <- function(obs, m, xlim = c(0, 1)) {
   obs01  <- (obs - xlim[1]) / (xlim[2] - xlim[1])
@@ -2066,7 +2078,7 @@ riskhist <- function(obs, m, xlim = c(0, 1)) {
   return(res) #(m * sum(p_hat^2))
 }
 
-innFunc <- function(x,breaks){
+innFunc <- function(x,breaks,n){
   y <- x
   b <- breaks
   count <- hist(y, plot=FALSE, b, warn.unused=F)$counts/n
@@ -2086,7 +2098,7 @@ riskhist2D <- function(x,m, xlim){
   h <- 1/m
   n <- dim2
   breaks <- seq(0, 1, length.out = m + 1)
-  p_hats <- apply(obs01, 1, function(x) innFunc(x, breaks))
+  p_hats <- apply(obs01, 1, function(x) innFunc(x, breaks,n))
   
   res <- 2 / h / (n - 1) - (n + 1) / (n - 1) / h * p_hats
   return(res)
@@ -2127,7 +2139,10 @@ broptfp2D <- function(x) {
   r <- vapply(c(-0.5, 0.5), function(x) rep(x, dim1), numeric(dim1))
   xlim <- t(minMax)+ r
   res <- sapply(Mgrid, function(m) riskfp2D(x,m, xlim))
-  Mgrid[rowMins(res)]
+  if(length(dim(res)) == 0){
+    dim(res) <- c(1, length(Mgrid))
+  }
+  vapply(Mgrid[rowMins(res)], function(x) max(x,5),FUN.VALUE = numeric(1))
 }
 
 
