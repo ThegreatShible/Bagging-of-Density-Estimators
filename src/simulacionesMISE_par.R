@@ -12,14 +12,14 @@ simulaciones=function(n=100,M=10,B=150){
   colnames(res)=c("H","FP","Kde", "BagHist", "BagHistFP", "Bagkde", "Rash")
   rownames(res)=c("normal","chi2","mezcla1","mezcla2","bart","triangular")
   for(i in 1:M){
-    
+    print(i)
     err=matrix(NA,nrow=6,ncol=7)
     j=1
     for(nummodel in c(1,3,5,7,8,11)){
       
       sample=gendata(nummodel,n)
       bopt=bropt(sample$train)$opt
-      his=hist(sample$train,breaks=mybreaks(sample$train,nbr=bopt),plot=F)
+      his=hist_rcpp(sample$train,breaks=mybreaks(sample$train,nbr=bopt))
       
       bhist=BagHistfp(xx=sample$train,grille=sample$test, B)
       modelrash=rash(sample$train,grille=sample$test,nbr = bopt, B)
@@ -50,7 +50,10 @@ vars2export <- c("BagHistfp", "Bagkde", "bropt", "broptfp", "dtriangle", "error"
                  "riskfp", "riskhist", "rtriangle", "simulaciones")   
 clusterExport(cls, vars2export)
 
+Rprof()
 res <- simulaciones(n = 50, M = 100, B = 20)
+Rprof(NULL)
+summaryRprof()
 res
 #res <- parLapplyLB(cls, rev(c(20, 50, 100, 200, 500, 1000, 2000)),
 #              function(n) simulaciones(n = n, M = 100, B = 200))
