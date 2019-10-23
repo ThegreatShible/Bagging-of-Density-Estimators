@@ -56,11 +56,12 @@ innerFunc <- function(n,M,K,B,numModel) {
       # KDE
       kde=onekdeucv(sample$train,distributionData$test)
       
+      bagHist <- BagHistfp(xx=sample$train,grille=distributionData$test,B)
       # BagHist
-      estim2l=BagHistfp(xx=sample$train,grille=distributionData$test,B)$bh
+      estim2l=bagHist$bh
       
       # BagFP
-      estim1l=BagHistfp(xx=sample$train,grille=distributionData$test,B)$bhfp
+      estim1l=bagHist$bhfp
       
       #BagKde
       estim3l=Bagkde(xx=sample$train,grille=distributionData$test,B)
