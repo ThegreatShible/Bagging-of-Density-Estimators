@@ -9,44 +9,6 @@ NumericVector mids(NumericVector breaks){
   }
   return mids;
 }
-
-// [[Rcpp::export]]
-double riskhistRcpp(NumericVector obs, double m, NumericVector xlim) {
-  NumericVector obs01  = (obs - xlim[1]) / (xlim[2] - xlim[1]);
-  double h = 1 / m;
-  double n = obs.length();
-  NumericVector breaks = NumericVector(m+1);
-  double s = 0;
-  double interval = 1/(m+1);
-  for (int i=1; i<=m+1; i++) {
-    breaks[i] = s;
-    s = s+interval;
-  }
-  //histogram p_hat = (hist_counts(obs01, Named("plot") = false, Named("breaks") = breaks, Named("warn.unused") = false));
-  double p_hat = 3;
-  double res = 2 / h / (n - 1) - (n + 1) / (n - 1) / h * pow(p_hat, 2);
-  return res; /*(m * sum(p_hat^2)) */
-}
-
-// [[Rcpp::export]]
-Rcpp::List broptRcpp(NumericVector x){
-  int len = 5*floor(sqrt(x.length()));
-  NumericVector Mgrid = NumericVector(len-1);
-  for (int i=2; i<=len; i++) {
-    Mgrid[i-1] = i;
-  }
-  NumericVector J = NumericVector(Mgrid.length());
-  /*NumericVector lim = NumericVector::create(min(x)-0.5, max(x)+0.5);*/
-  NumericVector lim = range(x);
-  lim[1] -= 0.5;
-  lim[2] += 0.5;
-  for(int m=1; m<=Mgrid.length(); m++) {
-    Function riskhist("riskhist");
-    J[m] = (riskhistRcpp(x, Mgrid[m], lim));
-  }
-  return Rcpp::List::create(Rcpp::Named("opt")=Mgrid[which_min(J)]);
-}
-
 // [[Rcpp::export]]
 NumericVector mybreaks_rcpp(NumericVector x, double nbr) {
   double* mx = std::min_element(x.begin(), x.end());
@@ -77,23 +39,23 @@ List hist_rcpp(NumericVector x, NumericVector breaks) {
     r_breaks = breaks;
     nb_br = len;
   }
-
+  
   NumericVector counts = NumericVector(nb_br - 1);
   /*
    * Old code assuming x is sorted
    */
   /*int k=0;
-  int j=1;
-  for (int i=0; i<x.length(); i++) {
-    if (x[i] >= r_breaks[j]) {
-      counts[j-1] = k;
-      k = 0;
-      j = j + 1;
-    }
-    else {
-      k = k + 1;
-    }
-  }*/
+   int j=1;
+   for (int i=0; i<x.length(); i++) {
+   if (x[i] >= r_breaks[j]) {
+   counts[j-1] = k;
+   k = 0;
+   j = j + 1;
+   }
+   else {
+   k = k + 1;
+   }
+   }*/
   /*
    * New code, not causing RStudio fatal error
    */
@@ -118,4 +80,54 @@ List hist_rcpp(NumericVector x, NumericVector breaks) {
   
   return res;
 }
+
+
+
+// [[Rcpp::export]]
+double riskhistRcpp(NumericVector obs01, double m) {
+  
+ 
+  double h = 1 / m;
+  double n = obs01.length();
+  NumericVector breaks = NumericVector(m+1);
+  double s = 0;
+  double interval = 1/(m);
+  for (int i=0; i<m+1; i++) {
+    breaks[i] = s;
+    s = s+interval;
+  }
+  
+  //Rcout << "m" << m << "\n";
+  //Rcout << "breaks" << breaks << "\n";
+  NumericVector p_hat = as<NumericVector>(hist_rcpp(obs01, breaks = breaks)["counts"]) / n;
+  //Rcout << "p_hat" << p_hat << "\n";
+  //Rcout <<  "..............................................................\n";
+  
+  double res = 2 / h / (n - 1) - (n + 1) / (n - 1) / h * sum(pow(p_hat, 2));
+  return res; /*(m * sum(p_hat^2)) */
+}
+
+// [[Rcpp::export]]
+Rcpp::List broptRcpp(NumericVector x){
+  int len = 5*floor(sqrt(x.length()));
+  NumericVector Mgrid = NumericVector(len-1);
+
+  for (int i = 2; i<=len; i++) {
+    Mgrid[i-2] = i;
+  }
+  NumericVector J = NumericVector(Mgrid.length());
+  //NumericVector lim1 = NumericVector::create(min(x)-0.5, max(x)+0.5);
+  NumericVector xlim = range(x);
+  xlim[0] -= 0.5;
+  xlim[1] += 0.5;
+  NumericVector obs01  = (x - xlim[0]) / (xlim[1] - xlim[0]);
+  for(int m=0; m < Mgrid.length(); m++) {
+    //Function riskhist("riskhist");
+    J[m] = (riskhistRcpp(obs01, Mgrid[m]));
+  }
+  Rcout << "J: " << J;
+  return Rcpp::List::create(Rcpp::Named("opt")=Mgrid[which_min(J)]);
+}
+
+
 
