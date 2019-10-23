@@ -2069,10 +2069,10 @@ riskfp2D <- function(obs,m, xlim){
 }
 
 
-riskhist <- function(obs, m, xlim = c(0, 1)) {
-  obs01  <- (obs - xlim[1]) / (xlim[2] - xlim[1])
+riskhist <- function(obs01, m) {
+ 
   h      <- 1 / m
-  n      <- length(obs)
+  n      <- length(obs01)
   breaks <- seq(0, 1, length.out = m + 1)
   p_hat  <- hist_rcpp(obs01, breaks = breaks)$counts / n
   res1 <- sum(p_hat^2)
@@ -2091,15 +2091,12 @@ innFunc <- function(x,breaks,n){
 }
 
 
-riskhist2D <- function(x,m, xlim){
+riskhist2D <- function(obs01,m){
    
 
-  dim2 <- dim(x)[2]
-  obs <-  x - xlim[,1]
-  diff <- xlim[,2] - xlim[,1]
-  obs01 <- obs / diff
+ 
   h <- 1/m
-  n <- dim2
+  n <- dim(obs01)[2]
   breaks <- seq(0, 1, length.out = m + 1)
   p_hats <- apply(obs01, 1, function(x) innFunc(x, breaks,n))
   
@@ -2116,7 +2113,10 @@ bropt2D <- function(x) {
   minMax <- rowMinsMaxs(x)
   r <- vapply(c(-0.5, 0.5), function(x) rep(x, dim1), numeric(dim1))
   xlim <- t(minMax)+ r
-  res <- sapply(Mgrid, function(m) riskhist2D(x,m, xlim))
+  obs <-  x - xlim[,1]
+  diff <- xlim[,2] - xlim[,1]
+  obs01 <- obs / diff
+  res <- sapply(Mgrid, function(m) riskhist2D(obs01,m))
   Mgrid[rowMins(res)]
 
 }
@@ -2125,8 +2125,10 @@ bropt2D <- function(x) {
 bropt=function(x){
   Mgrid <- 2:(5 * floor(sqrt(length(x))))
   J     <- numeric(length(Mgrid))
+  xlim = c(min(x)-0.5, max(x)+0.5)
+  obs01  <- (x - xlim[1]) / (xlim[2] - xlim[1])
   for(m in seq_along(Mgrid)) {
-    J[m] <- riskhist(obs=x, Mgrid[m], xlim = c(min(x)-0.5, max(x)+0.5))
+    J[m] <- riskhist(obs=obs01, Mgrid[m])
   #plot(1 / Mgrid, J, type = 'l')
   }
   list(opt=Mgrid[which.min(J)])
