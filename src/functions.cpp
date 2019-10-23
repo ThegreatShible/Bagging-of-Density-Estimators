@@ -97,11 +97,9 @@ double riskhistRcpp(NumericVector obs01, double m) {
     s = s+interval;
   }
   
-  //Rcout << "m" << m << "\n";
-  //Rcout << "breaks" << breaks << "\n";
+
   NumericVector p_hat = as<NumericVector>(hist_rcpp(obs01, breaks = breaks)["counts"]) / n;
-  //Rcout << "p_hat" << p_hat << "\n";
-  //Rcout <<  "..............................................................\n";
+
   
   double res = 2 / h / (n - 1) - (n + 1) / (n - 1) / h * sum(pow(p_hat, 2));
   return res; /*(m * sum(p_hat^2)) */
@@ -125,7 +123,6 @@ Rcpp::List broptRcpp(NumericVector x){
     //Function riskhist("riskhist");
     J[m] = (riskhistRcpp(obs01, Mgrid[m]));
   }
-  Rcout << "J: " << J;
   return Rcpp::List::create(Rcpp::Named("opt")=Mgrid[which_min(J)]);
 }
 
