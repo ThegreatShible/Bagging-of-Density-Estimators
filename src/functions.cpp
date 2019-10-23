@@ -62,19 +62,19 @@ NumericVector mybreaks_rcpp(NumericVector x, double nbr) {
 }
 
 // [[Rcpp::export]]
-List hist_rcpp(NumericVector x, NumericVector br) {
+List hist_rcpp(NumericVector x, NumericVector breaks) {
   
   Function f("gc");
   /*x = x.sort();*/
-  double len = br.length();
+  double len = breaks.length();
   double nb_br;
-  NumericVector breaks;
+  NumericVector r_breaks;
   if (len == 1) {
-    breaks = mybreaks_rcpp(x, br[0]);
-    nb_br = br[0];
+    r_breaks = mybreaks_rcpp(x, breaks[0]);
+    nb_br = breaks[0];
   }
   else {
-    breaks = br;
+    r_breaks = breaks;
     nb_br = len;
   }
 
@@ -85,7 +85,7 @@ List hist_rcpp(NumericVector x, NumericVector br) {
   /*int k=0;
   int j=1;
   for (int i=0; i<x.length(); i++) {
-    if (x[i] >= breaks[j]) {
+    if (x[i] >= r_breaks[j]) {
       counts[j-1] = k;
       k = 0;
       j = j + 1;
@@ -102,19 +102,19 @@ List hist_rcpp(NumericVector x, NumericVector br) {
   }
   for (int i=0; i<x.length(); i++) {
     for (int j=0; j<nb_br-1; j++) {
-      if ((breaks[j] <= x[i]) && (x[i] <= breaks[j+1])) {
+      if ((r_breaks[j] <= x[i]) && (x[i] <= r_breaks[j+1])) {
         counts[j] = counts[j] + 1;
         break;
       }
     }
   }
   NumericVector density = counts / sum(counts);
-  density = density / diff(breaks);
+  density = density / diff(r_breaks);
   List res = List::create(
-    Named("breaks")=breaks,
+    Named("breaks")=r_breaks,
     Named("counts")=counts,
     Named("density")=density,
-    Named("mids")=mids(breaks));
+    Named("mids")=mids(r_breaks));
   
   return res;
 }
