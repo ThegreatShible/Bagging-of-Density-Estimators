@@ -19,7 +19,7 @@ simulaciones=function(n=100,M=10,B=150){
       
       sample=gendata(nummodel,n)
       bopt=bropt(sample$train)$opt
-      his=hist(sample$train,breaks=mybreaks(sample$train,nbr=bopt),plot=F)
+      his=hist_rcpp(sample$train,v_breaks=mybreaks(sample$train,nbr=bopt))
       
       bhist=BagHistfp(xx=sample$train,grille=sample$test, B)
       modelrash=rash(sample$train,grille=sample$test,nbr = bopt, B)
