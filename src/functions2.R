@@ -3,13 +3,16 @@
 
 ###Actualis? le 13/2/14 par Mathias
 
-
+library(Rcpp)
 library(caTools) # pour trapz  calcul numerique d'int pour normalisation dans boosting
 library(benchden)
 library(ks)
 library(rpart)
 #library(delt)
 library(nor1mix)
+
+sourceCpp("functions.cpp")
+
 ##################
 #Mod?les
 ##################
@@ -763,7 +766,7 @@ AgregHist = function(xx,grille=aa,nbr = 50, B=10, alpha=1) {
 # B		number of histograms to aggregate
 #Je perturbe chaque histogramme avec une normale et j'agr?ge (sans bootstrap)
 	fin = 0
-	zz = hist(xx,breaks=mybreaks(xx,nbr),plot=F,warn.unused = F)$breaks	
+	zz = hist_rcpp(xx,breaks=mybreaks(xx,nbr))$breaks	
 	mx = min(xx)
 	Mx = max(xx)
 	for(i in 1:B)
@@ -773,7 +776,7 @@ AgregHist = function(xx,grille=aa,nbr = 50, B=10, alpha=1) {
 		newb=sort(newb)
 		if(min(newb) > mx) newb= c(mx,newb)
 		if(max(newb) < Mx) newb= c(newb, Mx)
-		hs2=hist(xx,breaks=newb,plot=F,warn.unused = F)
+		hs2=hist_rcpp(xx,breaks=newb)
 		fin= fin + predict.hist(hs2,grille)
 		#if(i%%20 == 0) cat(i,">>")
 	}
@@ -788,7 +791,7 @@ AgregHistunif = function(xx,grille=aa,nbr = 50, B=10) {
 # B		number of histograms to aggregate
 #Je perturbe chaque histogramme avec une normale et j'agr?ge (sans bootstrap)
 	fin = 0
-	zz = hist(xx,breaks=mybreaks(xx,nbr),plot=F,warn.unused = F)$breaks	
+	zz = hist_rcpp(xx,breaks=mybreaks(xx,nbr))$breaks	
 	z=diff(zz)
 	h=z[1]
 	mx = min(xx)
@@ -800,7 +803,7 @@ AgregHistunif = function(xx,grille=aa,nbr = 50, B=10) {
 		#newb=sort(newb)
 		#if(min(newb) > mx) newb= c(mx,newb)
 		#if(max(newb) < Mx) newb= c(newb, Mx)
-		hs2=hist(xx,breaks=c(mx,newb,Mx),plot=F,warn.unused = F)
+		hs2=hist_rcpp(xx,breaks=c(mx,newb,Mx))
 		fin= fin + predict.hist(hs2,grille)
 		#if(i%%20 == 0) cat(i,">>")
 	}
@@ -818,7 +821,7 @@ rash = function(xx,grille=aa,nbr = 50, B=10) {
   # B		number of histograms to aggregate
   #Je perturbe chaque histogramme avec une normale et j'agr?ge (sans bootstrap)
   fin = 0
-  hist = hist(xx,breaks=mybreaks(xx,nbr),plot=F,warn.unused = F)$breaks	
+  hist = hist_rcpp(xx,breaks=mybreaks(xx,nbr))$breaks	
   mx = min(xx)
   Mx = max(xx)
   for(i in 1:B)
@@ -828,7 +831,7 @@ rash = function(xx,grille=aa,nbr = 50, B=10) {
     newb=sort(newb)
     if(min(newb) > mx) newb= c(mx,newb)
     if(max(newb) < Mx) newb= c(newb, Mx)
-    hs2=hist(xx,breaks=newb,plot=F,warn.unused = F)
+    hs2=hist_rcpp(xx,breaks=newb)
     fin= fin + predict.hist(hs2,grille)
     #if(i%%20 == 0) cat(i,">>")
   }
@@ -843,7 +846,7 @@ rash.var = function(xx, grille,
   # br	number of break sfor histogram
   # B		number of histograms to aggregate
   #Je perturbe chaque histogramme avec une normale et j'agr?ge (sans bootstrap)
-  zz  = hist(xx, breaks = mybreaks(xx, nbr), plot = FALSE,warn.unused = F)$breaks	
+  zz  = hist_rcpp(xx, breaks = mybreaks(xx, nbr), plot = FALSE,warn.unused = F)$breaks	
   mx  = min(xx)
   Mx  = max(xx)
   sig = abs(min(diff(zz)))
@@ -859,7 +862,7 @@ rash.var = function(xx, grille,
         if(min(newb) > mx) newb[1] = mx
         if(max(newb) < Mx) newb[length(newb)] = Mx
         
-        hs2=hist(xx,breaks=newb,plot=F,warn.unused = F)
+        hs2=hist_rcpp(xx,breaks=newb)
         
         ln <- c(pmax(sqrt(hs2$density) - c, 0)^2, 0)
         un <- c((sqrt(hs2$density) + c)^2       , 0)
@@ -874,7 +877,7 @@ rash.var = function(xx, grille,
 #   # B		number of histograms to aggregate
 #   #Je perturbe chaque histogramme avec une normale et j'agr?ge (sans bootstrap)
 #   fin = 0
-#   zz = hist(xx,breaks=mybreaks(xx,nbr),plot=F)$breaks	
+#   zz = hist_rcpp(xx,breaks=mybreaks(xx,nbr),plot=F)$breaks	
 #   mx = min(xx)
 #   Mx = max(xx)
 # 
@@ -884,14 +887,14 @@ rash.var = function(xx, grille,
 #         newb=sort(newb)
 #         if(min(newb) > mx) newb= c(mx,newb)
 #         if(max(newb) < Mx) newb= c(newb, Mx)
-#         hs2=hist(xx,breaks=newb,plot=F)
+#         hs2=hist_rcpp(xx,breaks=newb,plot=F)
 #         density(unlist(mapply(rep, hs2$mids, hs2$counts)), bw = "ucv")
 #       }) 
 # }
 
 rashgreedy = function(xx,grille=aa,nbr = 50, B=10) {
 	fin = 0
-	zz=hist(xx,breaks=grille(xx,nbr),plot=F,warn.unused = F)$breaks
+	zz=hist_rcpp(xx,breaks=grille(xx,nbr))$breaks
 	mx = min(xx)
 	Mx = max(xx)
 	for(i in 1:B)
@@ -904,7 +907,7 @@ rashgreedy = function(xx,grille=aa,nbr = 50, B=10) {
 		newb=sort(newb)
 		if(min(newb) > mx) newb= c(mx,newb)
 		if(max(newb) < Mx) newb= c(newb, Mx)
-		hs2=hist(xx,breaks=newb,plot=F,warn.unused = F)
+		hs2=hist_rcpp(xx,breaks=newb)
 		fin= fin + predict.hist(hs2,grille)
 		#if(i%%20 == 0) cat(i,">>")
 	}
@@ -920,7 +923,7 @@ rashcart = function(xx,grille=aa,B=10) {
 	yy=xx
 	d=cbind(d,yy)
 	toto=rpart(yy~xx,data=d)
-	zz=hist(xx,breaks=c(min(xx),toto$splits[,4],max(xx)),plot=F,warn.unused = F)$breaks
+	zz=hist_rcpp(xx,breaks=c(min(xx),toto$splits[,4],max(xx)))$breaks
 	mx = min(xx)
 	Mx = max(xx)
 	for(i in 1:B)
@@ -933,7 +936,7 @@ rashcart = function(xx,grille=aa,B=10) {
 		newb=sort(newb)
 		if(min(newb) > mx) newb= c(mx,newb)
 		if(max(newb) < Mx) newb= c(newb, Mx)
-		hs2=hist(xx,breaks=newb,plot=F,warn.unused = F)
+		hs2=hist_rcpp(xx,breaks=newb)
 		fin= fin + predict.hist(hs2,grille)
 		#if(i%%20 == 0) cat(i,">>")
 	}
@@ -952,7 +955,7 @@ AgregHist.err = function(xx,grille=aa,nbr = 50, B= 10,dobs,alpha=1) {
 #Je perturbe chaque histogramme avec une normale et j'agr?ge (sans bootstrap)
 	fin = 0
 	err00=NULL
-	zz = hist(xx,breaks=mybreaks(xx,nbr),plot=F,warn.unused = F)$breaks	
+	zz = hist_rcpp(xx,breaks=mybreaks(xx,nbr))$breaks	
 	mx = min(xx)
 	Mx = max(xx)
 	for(i in 1:B)
@@ -962,7 +965,7 @@ AgregHist.err = function(xx,grille=aa,nbr = 50, B= 10,dobs,alpha=1) {
 		newb=sort(newb)
 		if(min(newb) > mx) newb= c(mx,newb)
 		if(max(newb) < Mx) newb= c(newb, Mx)
-		hs2=hist(xx,breaks=newb,plot=F,warn.unused = F)
+		hs2=hist_rcpp(xx,breaks=newb)
 		fin= fin + predict.hist(hs2,grille)
 		previ=fin/i
 		err00=rbind(err00,error(dobs,previ))
@@ -975,7 +978,7 @@ AgregHist.err = function(xx,grille=aa,nbr = 50, B= 10,dobs,alpha=1) {
 AgregHistunif.err = function(xx,grille=aa,nbr = 50, B= 10,dobs) {
 	fin = 0
 	err00=NULL
-	zz = hist(xx,breaks=mybreaks(xx,nbr),plot=F,warn.unused = F)$breaks	
+	zz = hist_rcpp(xx,breaks=mybreaks(xx,nbr))$breaks	
 	z=diff(zz)
 	h=z[1]
 	mx = min(xx)
@@ -983,7 +986,7 @@ AgregHistunif.err = function(xx,grille=aa,nbr = 50, B= 10,dobs) {
 	for(i in 1:B)
 	{
 		newb = zz + runif(length(zz),0,h)
-		hs2=hist(xx,breaks=c(mx,newb,Mx),plot=F,warn.unused = F)
+		hs2=hist_rcpp(xx,breaks=c(mx,newb,Mx))
 		fin= fin + predict.hist(hs2,grille)
 		previ=fin/i
 		err00=rbind(err00,error(dobs,previ))
@@ -996,7 +999,7 @@ AgregHistunif.err = function(xx,grille=aa,nbr = 50, B= 10,dobs) {
 rash.err = function(xx,grille=aa,nbr = 50, B= 10,dobs) {
 	fin = 0
 	err00=NULL
-	zz = hist(xx,breaks=mybreaks(xx,nbr),plot=F,warn.unused = F)$breaks	
+	zz = hist_rcpp(xx,breaks=mybreaks(xx,nbr))$breaks	
 	mx = min(xx)
 	Mx = max(xx)
 	for(i in 1:B)
@@ -1006,7 +1009,7 @@ rash.err = function(xx,grille=aa,nbr = 50, B= 10,dobs) {
 		newb=sort(newb)
 		if(min(newb) > mx) newb= c(mx,newb)
 		if(max(newb) < Mx) newb= c(newb, Mx)
-		hs2=hist(xx,breaks=newb,plot=F,warn.unused = F)
+		hs2=hist_rcpp(xx,breaks=newb)
 		fin= fin + predict.hist(hs2,grille)
 		previ=fin/i
 		err00=rbind(err00,error(dobs,previ))
@@ -1031,7 +1034,7 @@ BagHist = function(xx,grille=aa, B= 10) {
    for(i in 1:B)    {
        xb = xx[sample(n,replace=TRUE)]
        nbr=bropt(xb)$opt
-       hs2=hist(xb,breaks=mybreaks(xb,nbr),plot=F,warn.unused = F)
+       hs2=hist_rcpp(xb,breaks=mybreaks(xb,nbr))
        fin= fin + predict.hist(hs2,grille)
        #if(i%%20 == 0) cat(i,">>")
    }
@@ -1050,7 +1053,7 @@ BagHist.err = function(xx,grille=aa,B= 10,dobs) {
 	for(i in 1:B)    {
 		xb = xx[sample(n,replace=T)]
 		nbr=bropt(xb)$opt
-		hs2=hist(xb,breaks=mybreaks(xb,nbr),plot=F,warn.unused = F)
+		hs2=hist_rcpp(xb,breaks=mybreaks(xb,nbr))
 		fin= fin + predict.hist(hs2,grille)
 		previ=fin/i
 		err00=rbind(err00,error(dobs,previ))
@@ -1070,7 +1073,7 @@ BagHist.err = function(xx,grille=aa,B= 10,dobs) {
 #   fin2=0
 #   for(i in 1:B)    {
 #     xb = xx[sample(n,replace=TRUE)]
-#     hs2=hist(xb,breaks=mybreaks(xb,nbr),plot=F)
+#     hs2=hist_rcpp(xb,breaks=mybreaks(xb,nbr),plot=F)
 #     fin= fin + approxfun(x=hs2$mids,y=hs2$density)(grille)
 #     fin2=fin2+ predict.hist(hs2,grille)
 #   }
@@ -1088,8 +1091,8 @@ BagHistfp = function(xx,grille=aa, B= 10) {
     xb = xx[sample(n,replace=TRUE)]
     nbr=bropt(xb)$opt
     nbrfp=broptfp(xb)$opt
-    hs=hist(xb,breaks=mybreaks(xb,nbr),plot=F,warn.unused = F)
-    hs2=hist(xb,breaks=mybreaks(xb,nbrfp),plot=F,warn.unused = F)
+    hs=hist_rcpp(xb,breaks=mybreaks(xb,nbr))
+    hs2=hist_rcpp(xb,breaks=mybreaks(xb,nbrfp))
     m <- hs2$mids
     h <- m[2] - m[1]
     m <- c(m[1] - h, m, m[length(m)] + h)
@@ -1116,8 +1119,8 @@ BagHistfp.err = function(xx,grille=aa, B= 10,dobs) {
     xb = xx[sample(n,replace=T)]
     nbr=bropt(xb)$opt
     nbrfp=broptfp(xb)$opt
-    hs=hist(xb,breaks=mybreaks(xb,nbr),plot=F,warn.unused = F)
-    hs2=hist(xb,breaks=mybreaks(xb,nbrfp),plot=F,warn.unused = F)
+    hs=hist_rcpp(xb,breaks=mybreaks(xb,nbr))
+    hs2=hist_rcpp(xb,breaks=mybreaks(xb,nbrfp))
     m <- hs2$mids
     h <- m[2] - m[1]
     m <- c(m[1] - h, m, m[length(m)] + h)
@@ -1146,7 +1149,7 @@ avshift=function(xx,aa,nbr,M){
 	s=seq(mx,Mx,h)
 	pred=0
 	for (i in 1:M){
-		hh=hist(xx,breaks=c(mx-0.5,s+(i-1)*h/M,Mx+0.5),plot=F,warn.unused = F)
+		hh=hist_rcpp(xx,breaks=c(mx-0.5,s+(i-1)*h/M,Mx+0.5))
 		pred=pred+predict.hist(hh,sort(aa))
 	}
 	pred=pred/M
@@ -1161,7 +1164,7 @@ ash.err = function(xx,aa,nbr, B= 10,dobs) {
 	pred=0
 	err0=NULL
 	for (i in 1:B){
-		hh=hist(xx,breaks=c(mx-0.5,s+(i-1)*h/B,Mx+0.5),plot=F,warn.unused = F)
+		hh=hist_rcpp(xx,breaks=c(mx-0.5,s+(i-1)*h/B,Mx+0.5))
 		pred=pred+predict.hist(hh,sort(aa))
 		predi=pred/i
 		err0=rbind(err0,error(dobs,predi))
@@ -1179,7 +1182,7 @@ ash.err = function(xx,aa,nbr, B= 10,dobs) {
 samarov = function(xx,aa,B=10,alpha=1) {
     jmin=+Inf
 	for(nbr in c(10,20,50)){
-		zz = hist(xx,breaks=mybreaks(xx,nbr),plot=F,warn.unused = F)$breaks	
+		zz = hist_rcpp(xx,breaks=mybreaks(xx,nbr))$breaks	
 		mx = min(xx)
 		Mx = max(xx)
 		for(i in 1:B)
@@ -1189,7 +1192,7 @@ samarov = function(xx,aa,B=10,alpha=1) {
 			newb=sort(newb)
 			if(min(newb) > mx) newb= c(mx,newb)
 			if(max(newb) < Mx) newb= c(newb, Mx)
-			hs2=hist(xx,breaks=newb,plot=F,warn.unused = F)
+			hs2=hist_rcpp(xx,breaks=newb)
 			je=-2/(length(aa))*sum(predict.hist(hs2,aa))+sintegral(sort(aa),(hs2$intensities[order(aa)])^2)
 			if (je<jmin) {
 				jmin=je 
@@ -1199,7 +1202,7 @@ samarov = function(xx,aa,B=10,alpha=1) {
 		}
 	}
 	#cat("\n")
-	histsam=hist(xx,breaks=bropt,plot=F,warn.unused = F)
+	histsam=hist_rcpp(xx,breaks=bropt)
 	predsam=predict.hist(histsam,aa)
     list(bropt=bropt,jmin=jmin,predsam=predsam)
 }
@@ -1460,7 +1463,7 @@ genereAh = function(x,H=c(5,10,20,30,40,50),V=10){
 	for(l in 1:L)
 		for(v in 1:V)	{
 			bloque = which(indices ==v)
-			kk=hist(x[-bloque],breaks=mybreaks(x[-bloque],H[l]),plot=F,warn.unused = F)   
+			kk=hist_rcpp(x[-bloque],breaks=mybreaks(x[-bloque],H[l]))   
 			A[bloque,l] = predict.hist(kk,x[bloque])
 		}
 	A
@@ -1478,7 +1481,7 @@ genereBh = function(x,xtest=NULL,H=c(5,10,20,30,40,50))
 	N = length(xtest)
 	A = matrix(NA,nrow=N,ncol=L)
 	for(l in 1:L)	{
-		kk=hist(x,breaks=mybreaks(x,H[l]),plot=F,warn.unused = F)   
+		kk=hist_rcpp(x,breaks=mybreaks(x,H[l]))   
 		A[,l] = predict.hist(kk,xtest)
 	}
 	A
@@ -1646,7 +1649,7 @@ simulations = function(nummodel=1,m=5,n=100,K=5,nbr,dmp=T)
     {
         dd = ldata[[i]]
 #HISTOGRAMME
-        zz=hist(train,breaks=mybreaks(train,nbr[1]),plot=F,warn.unused = F)
+        zz=hist_rcpp(train,breaks=mybreaks(train,nbr[1]))
         predictionssurHISTO=predict.hist(zz,dd$test)
         resHist[i,] = error(dd$dobs,predictionssurHISTO)
 #ASH
@@ -1659,7 +1662,7 @@ simulations = function(nummodel=1,m=5,n=100,K=5,nbr,dmp=T)
         finrash = rash(train,dd$test,nbr[5],K)
         resRASH[i,] = error(dd$dobs,finrash)
 #BAGHIST
-        BH = BagHist(train,dd$test,nbr[6],K)
+        BH = BagHist_rcpp(train,dd$test,nbr[6],K)
         resBagHist[i,] = error(dd$dobs,BH)
 #kdenrd
         finkdenrd = onekdenrd(train,dd$test)
@@ -1677,7 +1680,7 @@ simulations = function(nummodel=1,m=5,n=100,K=5,nbr,dmp=T)
         stacking=stack.dens(train,xtest=dd$test)
         resStack[i,]=error(dd$dobs,stacking$prev)
 #Stacking Histogrammes
-        stackh= stack.denshist(train,dd$test,pl=F,H=c(5,10,20,30,40,50),V=10,eps=0.0001,itermax=3000)
+        stackh= stack.denshist_rcpp(train,dd$test,pl=F,H=c(5,10,20,30,40,50),V=10,eps=0.0001,itermax=3000)
         resStackH[i,]=error(dd$dobs,stackh$prev)
 #boosting
         boost =boostkde(train,xtest=dd$test,K=5,h=bw.nrd(train))
@@ -1714,12 +1717,12 @@ simulationsAHBHRASH= function(nummodel=1,m=5,n=100,K=5,nbr,dmp=T,alpha)
 		dd = gendata(nummodel,n)
 		
 #HISTOGRAMME
-		zz=hist(train,breaks=mybreaks(train,nbr[1]),plot=F,warn.unused = F)
+		zz=hist_rcpp(train,breaks=mybreaks(train,nbr[1]))
 		predictionssurHISTO=predict.hist(zz,dd$test)
 		resHist[i,] = error(dd$dobs,predictionssurHISTO)
 		
 #AGGREG HISTOGRAMMES NORMAL
-		agghist = AgregHist(train,dd$test,nbr[2],K,alpha) 
+		agghist = AgregHist_rcpp(train,dd$test,nbr[2],K,alpha) 
 		resAggHist[i,] = error(dd$dobs,agghist)
 
 #AGGREG HISTOGRAMMES UNIF
@@ -1731,7 +1734,7 @@ simulationsAHBHRASH= function(nummodel=1,m=5,n=100,K=5,nbr,dmp=T,alpha)
 		resAggHisttr[i,] = error(dd$dobs,finrash)		
 
 #BAGHISTOGRAMMES
-		baghist = BagHist(train,dd$test,nbr[5],K) 
+		baghist = BagHist_rcpp(train,dd$test,nbr[5],K) 
 		resBagHist[i,] = error(dd$dobs,baghist)		
 		
 #kdenrd0
@@ -1892,11 +1895,11 @@ simulations2 = function(nummodel=1,m=5,n=100,K=5,nbr,dmp=T)
 		test = dd$test
 		obs = dd$obs
 #HISTOGRAMME
-        zz=hist(train,breaks=mybreaks(train,nbr[1]),plot=F,warn.unused = F)
+        zz=hist_rcpp(train,breaks=mybreaks(train,nbr[1]))
         predictionssurHISTO=predict.hist(zz,dd$test)
         resHist[i,] = error(dd$dobs,predictionssurHISTO)
 #HISTOGRAMME Greedy		
-		zz2=hist(train,breaks=grille(train,nbr[2]),plot=F,,warn.unused = F)
+		zz2=hist_rcpp(train,breaks=grille(train,nbr[2]))
         predictionssurHISTO2=predict.hist(zz2,dd$test)
         resHistG[i,] = error(dd$dobs,predictionssurHISTO2)
 #Histogramme avec CART
@@ -1904,7 +1907,7 @@ simulations2 = function(nummodel=1,m=5,n=100,K=5,nbr,dmp=T)
 		yy=train
 		d=cbind(d,yy)
 		toto=rpart(yy~train,data=d)
-		zz3=hist(train,breaks=c(min(train),toto$splits[,4],max(train)),plot=F,warn.unused = F)
+		zz3=hist_rcpp(train,breaks=c(min(train),toto$splits[,4],max(train)))
 		predictionssurHISTO3=predict.hist(zz3,dd$test)
 		resHistC[i,] = error(dd$dobs,predictionssurHISTO3)				
 #ASH
@@ -1969,12 +1972,12 @@ optbreaks= function(nummodel=1,m=5,n=100,K=5,nbr,dmp=T)
 	{
 		dd = gendata(nummodel,n)
 #HISTOGRAMME
-        zz=hist(train,breaks=mybreaks(train,nbr),plot=F,warn.unused = F)
+        zz=hist_rcpp(train,breaks=mybreaks(train,nbr))
         predictionssurHISTO=predict.hist(zz,dd$test)
         resHist[i,] = error(dd$dobs,predictionssurHISTO)
 
 #HISTOGRAMME Greedy		
-		zz2=hist(train,breaks=grille(train,nbr),plot=F,warn.unused = F)
+		zz2=hist_rcpp(train,breaks=grille(train,nbr))
         predictionssurHISTO2=predict.hist(zz2,dd$test)
         resHistG[i,] = error(dd$dobs,predictionssurHISTO2)				
 		
@@ -2004,7 +2007,7 @@ optbreaks= function(nummodel=1,m=5,n=100,K=5,nbr,dmp=T)
 rashfp.err = function(xx,grille=aa,nbr = 50, B= 10,dobs,alpha=1) {
   fin = 0
   err00=NULL
-  zz = hist(xx,breaks=mybreaks(xx,nbr),plot=F,warn.unused = F)$breaks	
+  zz = hist_rcpp(xx,breaks=mybreaks(xx,nbr))$breaks	
   mx = min(xx)
   Mx = max(xx)
   for(i in 1:B)
@@ -2014,7 +2017,7 @@ rashfp.err = function(xx,grille=aa,nbr = 50, B= 10,dobs,alpha=1) {
     newb=sort(newb)
     if(min(newb) > mx) newb= c(mx,newb)
     if(max(newb) < Mx) newb= c(newb, Mx)
-    hs2=hist(xx,breaks=newb,plot=F,warn.unused = F)
+    hs2=hist_rcpp(xx,breaks=newb)
     fin= fin + approxfun(x=hs2$mids,y=hs2$density)(grille)
     previ=fin/i
     err00=rbind(err00,error(dobs,previ))
@@ -2032,7 +2035,7 @@ riskfp <- function(obs, m, xlim = c(0, 1)) {
   h      <- 1 / m
   n      <- length(obs)
   breaks <- seq(0, 1, length.out = m + 1)
-  p_hat  <- hist(obs01, plot = FALSE, breaks = breaks,warn.unused = F)$counts #/ n
+  p_hat  <- hist_rcpp(obs01, breaks = breaks)$counts #/ n
   
   vs <- cbind(c(0, 0, p_hat), c(0, - 2 * p_hat, 0), c(p_hat, 0, 0))
   res1 <- sum(rowSums(vs)^2)
@@ -2052,7 +2055,7 @@ riskfp2D <- function(obs,m, xlim){
   h      <- 1 / m
   n      <- length(obs)
   breaks <- seq(0, 1, length.out = m + 1)
-  p_hats <- apply(obs01, 1, function(x) hist(obs01, plot = FALSE, breaks = breaks,warn.unused = F)$counts)
+  p_hats <- apply(obs01, 1, function(x) hist_rcpp(obs01, breaks = breaks)$counts)
   dim1 <- dim(p_hats)[2]
   zeros <- matrix(0, ncol=dim1)
   t_p_hat <- p_hats
@@ -2071,7 +2074,7 @@ riskhist <- function(obs, m, xlim = c(0, 1)) {
   h      <- 1 / m
   n      <- length(obs)
   breaks <- seq(0, 1, length.out = m + 1)
-  p_hat  <- hist(obs01, plot = FALSE, breaks = breaks, warn.unused = F)$counts / n
+  p_hat  <- hist_rcpp(obs01, breaks = breaks)$counts / n
   res1 <- sum(p_hat^2)
   
   res <- 2 / h / (n - 1) - (n + 1) / (n - 1) / h * res1
@@ -2081,7 +2084,7 @@ riskhist <- function(obs, m, xlim = c(0, 1)) {
 innFunc <- function(x,breaks,n){
   y <- x
   b <- breaks
-  count <- hist(y, plot=FALSE, b, warn.unused=F)$counts/n
+  count <- hist_rcpp(y, b)$counts/n
   squareCounts <- count^2
   squareSum <- sum(squareCounts)
   squareSum
@@ -2213,7 +2216,7 @@ tube_hist <- function(data, nbr = 50, B = 10, conf = c(0.05, 0.95)) {
   for (i in 1:B) {
     xb  = xx[sample(n, replace = TRUE)]
     mybreaks <- mybreaks(xb, nbr)
-    hs2 = hist(xb, breaks = mybreaks, plot = FALSE)
+    hs2 = hist_rcpp(xb, breaks = mybreaks, plot = FALSE)
     
     mat[i, ] <- predict.hist(hh = hs2, x = grille)
   }
@@ -2236,7 +2239,7 @@ tube_fp <- function(data, nbr = 50, B = 10, conf = c(0.05, 0.95)) {
   for (i in 1:B) {
     xb  = xx[sample(n, replace = TRUE)]
     mybreaks <- mybreaks(xb, nbr)
-    hs2 = hist(xb, breaks = mybreaks, plot = FALSE)
+    hs2 = hist_rcpp(xb, breaks = mybreaks, plot = FALSE)
     
     mids <- hs2$mids
     delta <- diff(mybreaks)[1]
