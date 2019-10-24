@@ -17,7 +17,7 @@ simulaciones=function(n = 100, M = 10, B = 150){
   for(ll in 1:length(vec)){
     print(ll)
     dd = gendata(vec[ll],n)
-    bopt = bropt(dd$train)$opt  # needed for Hist & RASH
+    bopt = broptRcpp(dd$train)$opt  # needed for Hist & RASH
     zz = hist(dd$train,breaks=mybreaks(dd$train,nbr=bopt),plot=F)
     
     bhist = BagHistfp(xx=dd$train, grille=dd$test, B)

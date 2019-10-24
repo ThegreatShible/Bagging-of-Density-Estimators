@@ -12,7 +12,7 @@ innerFunc <- function(n,M,K,B,numModel) {
   for (m in 1:M) {
     distributionData =gendata(numModel,n)
     #optimal number of chunks in the histogram
-    bopt=bropt(distributionData$train)$opt
+    bopt=broptRcpp(distributionData$train)$opt
     histogram=hist(distributionData$train,breaks=mybreaks(distributionData$train,nbr=bopt),plot=F)
     #O(distributionData.length * histogram.breaks)
     h=predict.hist(histogram,distributionData$test)
@@ -48,7 +48,7 @@ innerFunc <- function(n,M,K,B,numModel) {
     for (k in 1:K){
       #if(k%%20 == 0) cat(k,">>")
       sample=onlyTrainGendata(numModel,n)
-      bopt=bropt(sample$train)$opt
+      bopt=broptRcpp(sample$train)$opt
       # -- Histogram
       histogram=hist(sample$train,breaks=mybreaks(sample$train,nbr=bopt),plot=F)
       h=predict.hist(histogram,distributionData$test)

@@ -3,6 +3,7 @@
 
 ###Actualis? le 13/2/14 par Mathias
 
+
 library(Rcpp)
 library(caTools) # pour trapz  calcul numerique d'int pour normalisation dans boosting
 library(benchden)
@@ -1033,7 +1034,7 @@ BagHist = function(xx,grille=aa, B= 10) {
    fin = 0
    for(i in 1:B)    {
        xb = xx[sample(n,replace=TRUE)]
-       nbr=bropt(xb)$opt
+       nbr=broptRcpp(xb)$opt
        hs2=hist_rcpp(xb,breaks=mybreaks(xb,nbr))
        fin= fin + predict.hist(hs2,grille)
        #if(i%%20 == 0) cat(i,">>")
@@ -1052,7 +1053,7 @@ BagHist.err = function(xx,grille=aa,B= 10,dobs) {
 	Mx = max(xx)
 	for(i in 1:B)    {
 		xb = xx[sample(n,replace=T)]
-		nbr=bropt(xb)$opt
+		nbr=broptRcpp(xb)$opt
 		hs2=hist_rcpp(xb,breaks=mybreaks(xb,nbr))
 		fin= fin + predict.hist(hs2,grille)
 		previ=fin/i
@@ -1089,8 +1090,9 @@ BagHistfp = function(xx,grille=aa, B= 10) {
   fin2=0
   for(i in 1:B)    {
     xb = xx[sample(n,replace=TRUE)]
-    nbr=bropt(xb)$opt
-    nbrfp=broptfp(xb)$opt
+    brpt=bropt_and_broptfp_Rcpp(xb)
+    nbr = brpt$opt
+    nbrfp=brpt$opt_fp
     hs=hist_rcpp(xb,breaks=mybreaks(xb,nbr))
     hs2=hist_rcpp(xb,breaks=mybreaks(xb,nbrfp))
     m <- hs2$mids
@@ -1117,8 +1119,9 @@ BagHistfp.err = function(xx,grille=aa, B= 10,dobs) {
   Mx = max(xx)
   for(i in 1:B)    {
     xb = xx[sample(n,replace=T)]
-    nbr=bropt(xb)$opt
-    nbrfp=broptfp(xb)$opt
+    brpt = bropt(xb)
+    nbr=brpt$opt
+    nbrfp=brpt$opt_fp
     hs=hist_rcpp(xb,breaks=mybreaks(xb,nbr))
     hs2=hist_rcpp(xb,breaks=mybreaks(xb,nbrfp))
     m <- hs2$mids

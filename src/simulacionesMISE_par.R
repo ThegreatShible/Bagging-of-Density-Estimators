@@ -16,7 +16,7 @@ simulaciones=function(n=100,M=10,B=150){
     j=1
     for(nummodel in c(1,3,5,7,8,11)){
       sample=gendata(nummodel,n)
-      bopt=bropt(sample$train)$opt
+      bopt=broptRcpp(sample$train)$opt
       his=hist_rcpp(sample$train,breaks=mybreaks(sample$train,nbr=bopt))
       
       bhist=BagHistfp(xx=sample$train,grille=sample$test, B)

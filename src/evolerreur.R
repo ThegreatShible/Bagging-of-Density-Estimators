@@ -16,7 +16,7 @@ evol.error=function(modele=1,n=100,B=200,M=5){
     for(kk in 1:M){
       print(kk)
       dd=gendata(modele,n)
-      bopt=bropt(dd$train)$opt
+      bopt=broptRcpp(dd$train)$opt
       
       bhfp=BagHistfp.err(xx=dd$train,grille=dd$test,B=B,dobs=dd$dobs)
       A[kk,]=bhfp$erreurbh[,1]
