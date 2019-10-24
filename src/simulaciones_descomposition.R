@@ -18,8 +18,9 @@ innerFunc <- function(n,M,K,B,numModel) {
     h=predict.hist(histogram,distributionData$test)
     fp=approxfun(x=histogram$mids,y=histogram$density)(distributionData$test)
     kde=onekdeucv(distributionData$train,distributionData$test)
-    estim1=BagHistfp(xx=distributionData$train,grille=distributionData$test, B)$bhfp
-    estim2=BagHistfp(xx=distributionData$train,grille=distributionData$test, B)$bh
+    bhist = BagHistfp(xx=distributionData$train,grille=distributionData$test, B)
+    estim1=bhist$bhfp
+    estim2=bhist$bh
     estim3=Bagkde(xx=distributionData$train,grille=distributionData$test,B)
     estim4=rash(xx=distributionData$train,grille=distributionData$test, nbr=bopt,B)
     
