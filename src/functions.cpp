@@ -147,5 +147,44 @@ Rcpp::List bropt_and_broptfp_Rcpp(NumericVector x) {
   return Rcpp::List::create(Rcpp::Named("opt")=Mgrid[which_min(J)], Rcpp::Named("opt_fp")=max(5, Mgrid[which.min(J_fp)]));
 }
 
+// [[Rcpp::export]]
+NumericVector riskhist_and_fp_Rcpp(NumericVector obs01, double m){
+  
+  double h      = 1 / m;
+  int n      = obs01.length();
+  NumericVector breaks = mybreaks_rcpp(NumericVector::create(0, 1), m + 1);
+  
+  NumericVector p_hat_fp  = hist_rcpp(obs01, breaks = breaks)["counts"];
+  
+  /*###riskhist*/
+  NumericVector p_hat  = p_hat_fp / n;
+  double res1 = sum(pow(p_hat, 2));
+  double res = 2 / h / (n - 1) - (n + 1) / (n - 1) / h * res1;
+  /*#######*/
+  
+  /*###fp####*/
+  
+  int len_p_hat = p_hat_fp.length();
+  NumericVector vs1 = NumericVector(len_p_hat + 2);
+  NumericVector vs2 = NumericVector(len_p_hat + 2);
+  NumericVector vs3 = NumericVector(len_p_hat + 2);
+  double p_i;
+  for (int i=0; i<len_p_hat; i++) {
+    p_i = p_hat_fp[i];
+    vs3[i] = p_i;
+    vs2[i+1] = -2 * p_i;
+    vs1[i+2] = p_i;
+  }
+  
+  double res1_fp = 0;
+  for (int i=0; i<len_p_hat + 2; i++) {
+    res1_fp = res1_fp + pow(vs1[i] + vs2[i] + vs3[i], 2);
+  }
+  double res_fp = 271 / (480 * n * h) + 49 / (2880 * pow(n, 2) * h) * res1_fp;
+  /*#######*/
+  
+  return(NumericVector::create(res,res_fp));
+}
+
 
 
