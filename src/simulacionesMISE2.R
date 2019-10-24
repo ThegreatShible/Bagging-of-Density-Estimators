@@ -13,13 +13,13 @@ simulaciones=function(n = 100, M = 10, B = 150){
   
   for(i in 1:M){
     A = matrix(NA, nrow = length(vec), ncol = 7)
+    print(i)
     #A=matrix(NA,nrow=2,ncol=7)
   for(ll in 1:length(vec)){
-    print(ll)
+    
     dd = gendata(vec[ll],n)
     bopt = broptRcpp(dd$train)$opt  # needed for Hist & RASH
-    zz = hist(dd$train,breaks=mybreaks(dd$train,nbr=bopt),plot=F)
-    
+    zz = hist_rcpp(dd$train, breaks=mybreaks(dd$train,nbr=bopt))
     bhist = BagHistfp(xx=dd$train, grille=dd$test, B)
     modelrash = rash(dd$train, grille = dd$test, nbr = bopt, B)
     #modelavshift(dd$train,dd$test,nbr=bopt,M=B)
@@ -67,8 +67,8 @@ load("resultados_mise-testjc.Rdata")
 
 vec=c(1,2,3,5,6,8,11,12)
 library(xtable)
-i=2
-mise=(res[[i]]*100)[vec,]
+i=1
+mise=(res*100)[vec,]
 rownames(mise)=c("Normal","Chi2","Mixture","Claw","Triangular","Uniform","Tsybakov","Uniform Mixt.")
 xtable(mise,digits=4)
 
