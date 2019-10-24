@@ -15,25 +15,25 @@ simulaciones=function(n=100,M=10,B=150){
     err=matrix(NA,nrow=6,ncol=7)
     j=1
     for(nummodel in c(1,3,5,7,8,11)){
-      sample=gendata(nummodel,n)
-      bopt=broptRcpp(sample$train)$opt
-      his=hist_rcpp(sample$train,breaks=mybreaks(sample$train,nbr=bopt))
+      samples=gendata(nummodel,n)
+      bopt=broptRcpp(samples$train)$opt
+      his=hist_rcpp(samples$train,breaks=mybreaks(samples$train,nbr=bopt))
       
-      bhist=BagHistfp(xx=sample$train,grille=sample$test, B)
-      modelrash=rash(sample$train,grille=sample$test,nbr = bopt, B)
-      #modelavshift(sample$train,sample$test,nbr=bopt,M=B)
-      modelbagkde <- Bagkde(xx = sample$train, grille = sample$test, B)
+      bhist=BagHistfp(xx=samples$train,grille=samples$test, B)
+      modelrash=rash(samples$train,grille=samples$test,nbr = bopt, B)
+      #modelavshift(samples$train,samples$test,nbr=bopt,M=B)
+      modelbagkde <- Bagkde(xx = samples$train, grille = samples$test, B)
       
-      err[j,]=c(error(sample$dobs,predict.hist(his,sample$test))[1],
-              error(sample$dobs,approxfun(x=his$mids,y=his$density)(sample$test))[1],    
-              error(sample$dobs,onekdeucv(sample$train,sample$test))[1],
-              error(sample$dobs,bhist$bh)[1],
-              error(sample$dobs,bhist$bhfp)[1], 
-              #error(sample$dobs,modelavshift)[1]
-              error(sample$dobs,modelbagkde)[1],
-              error(sample$dobs,modelrash)[1] )
+      err[j,]=c(error(samples$dobs,predict.hist(his,samples$test))[1],
+              error(samples$dobs,approxfun(x=his$mids,y=his$density)(samples$test))[1],    
+              error(samples$dobs,onekdeucv(samples$train,samples$test))[1],
+              error(samples$dobs,bhist$bh)[1],
+              error(samples$dobs,bhist$bhfp)[1], 
+              #error(samples$dobs,modelavshift)[1]
+              error(samples$dobs,modelbagkde)[1],
+              error(samples$dobs,modelrash)[1] )
       
-      #MISE[j,]=(sample$dobs-bhist$bhfp)^2 +
+      #MISE[j,]=(samples$dobs-bhist$bhfp)^2 +
       j=j+1
     }
     res=res+err

@@ -278,7 +278,7 @@ onlyTrainGendata = function(nummodel=1, n=100) {
   
 }
 
-gendata= function(nummodel = 1, n = 100)
+gendata <-  function(nummodel = 1, n = 100)
 {
 # nummodel : number of the model
 # n : sample size

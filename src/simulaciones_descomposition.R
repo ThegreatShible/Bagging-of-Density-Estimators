@@ -10,7 +10,7 @@ rm(list = ls())
 innerFunc <- function(n,M,K,B,numModel) {
   res = matrix(0, nrow = 1, ncol = 21)
   for (m in 1:M) {
-    distributionData =gendata(numModel,n)
+    distributionData = gendata(numModel,n)
     #optimal number of chunks in the histogram
     bopt=broptRcpp(distributionData$train)$opt
     histogram=hist(distributionData$train,breaks=mybreaks(distributionData$train,nbr=bopt),plot=F)
@@ -47,17 +47,17 @@ innerFunc <- function(n,M,K,B,numModel) {
     
     for (k in 1:K){
       #if(k%%20 == 0) cat(k,">>")
-      sample=onlyTrainGendata(numModel,n)
-      bopt=broptRcpp(sample$train)$opt
+      samples=onlyTrainGendata(numModel,n)
+      bopt=broptRcpp(samples)$opt
       # -- Histogram
-      histogram=hist(sample$train,breaks=mybreaks(sample$train,nbr=bopt),plot=F)
+      histogram=hist(samples,breaks=mybreaks(samples,nbr=bopt),plot=F)
       h=predict.hist(histogram,distributionData$test)
       # -- FP
       fp=approxfun(x=histogram$mids,y=histogram$density)(distributionData$test)
       # KDE
-      kde=onekdeucv(sample$train,distributionData$test)
+      kde=onekdeucv(samples,distributionData$test)
       
-      bagHist <- BagHistfp(xx=sample$train,grille=distributionData$test,B)
+      bagHist <- BagHistfp(xx=samples,grille=distributionData$test,B)
       # BagHist
       estim2l=bagHist$bh
       
@@ -65,10 +65,10 @@ innerFunc <- function(n,M,K,B,numModel) {
       estim1l=bagHist$bhfp
       
       #BagKde
-      estim3l=Bagkde(xx=sample$train,grille=distributionData$test,B)
+      estim3l=Bagkde(xx=samples,grille=distributionData$test,B)
       
       #Rash
-      estim4l=rash(xx=sample$train,grille=distributionData$test, nbr=bopt,B)
+      estim4l=rash(xx=samples,grille=distributionData$test, nbr=bopt,B)
       
       finalh      = finalh      + (h - distributionData$dobs)^2
       finalfp     = finalfp     + (fp - distributionData$dobs)^2 
