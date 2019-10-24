@@ -125,5 +125,27 @@ Rcpp::List broptRcpp(NumericVector x){
   return Rcpp::List::create(Rcpp::Named("opt")=Mgrid[which_min(J)]);
 }
 
+Rcpp::List bropt_and_broptfp_Rcpp(NumericVector x) {
+  int len = 5*floor(sqrt(x.length()));
+  NumericVector Mgrid = NumericVector(len-1);
+  
+  for (int i = 2; i<=len; i++) {
+    Mgrid[i-2] = i;
+  }
+  NumericVector J = NumericVector(Mgrid.length());
+  NumericVector J_fp = NumericVector(Mgrid.length()); 
+  //NumericVector lim1 = NumericVector::create(min(x)-0.5, max(x)+0.5);
+  NumericVector xlim = range(x);
+  xlim[0] -= 0.5;
+  xlim[1] += 0.5;
+  NumericVector obs01  = (x - xlim[0]) / (xlim[1] - xlim[0]);
+  for(int m=0; m < Mgrid.length(); m++) {
+    List vec = riskhist_and_fp_Rcpp(obs01,Mgrid[m])
+    J[m] = vec[0]
+    J_fp[m] = vec[1]
+  }
+  return Rcpp::List::create(Rcpp::Named("opt")=Mgrid[which_min(J)], Rcpp::Named("opt_fp")=max(5, Mgrid[which.min(J_fp)]));
+}
+
 
 
