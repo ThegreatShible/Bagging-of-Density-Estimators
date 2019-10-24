@@ -847,7 +847,7 @@ rash.var = function(xx, grille,
   # br	number of break sfor histogram
   # B		number of histograms to aggregate
   #Je perturbe chaque histogramme avec une normale et j'agr?ge (sans bootstrap)
-  zz  = hist_rcpp(xx, breaks = mybreaks(xx, nbr), plot = FALSE,warn.unused = F)$breaks	
+  zz  = hist_rcpp(xx, breaks = mybreaks(xx, nbr))$breaks	
   mx  = min(xx)
   Mx  = max(xx)
   sig = abs(min(diff(zz)))
