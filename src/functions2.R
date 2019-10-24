@@ -1119,7 +1119,7 @@ BagHistfp.err = function(xx,grille=aa, B= 10,dobs) {
   Mx = max(xx)
   for(i in 1:B)    {
     xb = xx[sample(n,replace=T)]
-    brpt = bropt(xb)
+    brpt = bropt_and_broptfp_Rcpp(xb)
     nbr=brpt$opt
     nbrfp=brpt$opt_fp
     hs=hist_rcpp(xb,breaks=mybreaks(xb,nbr))
