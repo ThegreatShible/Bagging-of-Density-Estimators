@@ -26,7 +26,6 @@ NumericVector mybreaks_rcpp(NumericVector x, double nbr) {
 // [[Rcpp::export]]
 List hist_rcpp(NumericVector x, NumericVector breaks) {
   
-  Function f("gc");
   /*x = x.sort();*/
   double len = breaks.length();
   double nb_br;
