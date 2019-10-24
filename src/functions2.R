@@ -2044,6 +2044,28 @@ riskfp <- function(obs, m, xlim = c(0, 1)) {
   return(res) #(m * sum(p_hat^2))
 }
 
+riskhist_and_fp <- function(obs01, m){
+  
+  h      <- 1 / m
+  n      <- length(obs01)
+  breaks <- seq(0, 1, length.out = m + 1)
+  p_hat_fp  <- hist_rcpp(obs01, breaks = breaks)$counts
+  
+  ###riskhist
+  p_hat  <- p_hat_fp / n
+  res1 <- sum(p_hat^2)
+  res <- 2 / h / (n - 1) - (n + 1) / (n - 1) / h * res1
+  #######
+  
+  ###fp###
+  vs <- cbind(c(0, 0, p_hat_fp), c(0, - 2 * p_hat_fp, 0), c(p_hat_fp, 0, 0))
+  res1_fp <- sum(rowSums(vs)^2)
+  res_fp <- 271 / (480 * n * h) + 49 / (2880 * n^2 * h) * res1_fp
+  #######
+  
+  return(c(res,res_fp))
+}
+
 riskfp2D <- function(obs,m, xlim){
   require("gdata")
   require("Rfast")
@@ -2161,6 +2183,25 @@ broptfp = function(x){
   }
 #  plot.ts(Mgrid, J);  abline(v = Mgrid[which.min(J)], col = "red")
   list(opt = max(5, Mgrid[which.min(J)]))
+}
+
+
+bropt_and_broptfp <- function(x) {
+  Mgrid <- 2:(5 * floor(sqrt(length(x))))
+  J     <- numeric(length(Mgrid))
+  J_fp <- numeric(length(Mgrid))
+  xlim = c(min(x)-0.5, max(x)+0.5)
+  obs01  <- (x - xlim[1]) / (xlim[2] - xlim[1])
+  for(m in seq_along(Mgrid)) {
+    vec <- riskhist_and_fp(obs=obs01, Mgrid[m])
+    J[m] <- vec[1]
+    J_fp[m] <- vec[2]
+
+  }
+  
+  
+  list(opt=Mgrid[which.min(J)], opt_fp = max(5, Mgrid[which.min(J_fp)]))
+  
 }
 
 
