@@ -2262,7 +2262,7 @@ tube_hist <- function(data, nbr = 50, B = 10, conf = c(0.05, 0.95)) {
   for (i in 1:B) {
     xb  = xx[sample(n, replace = TRUE)]
     mybreaks <- mybreaks(xb, nbr)
-    hs2 = hist_rcpp(xb, breaks = mybreaks, plot = FALSE)
+    hs2 = hist_rcpp(xb, breaks = mybreaks)
     
     mat[i, ] <- predict.hist(hh = hs2, x = grille)
   }
@@ -2285,7 +2285,7 @@ tube_fp <- function(data, nbr = 50, B = 10, conf = c(0.05, 0.95)) {
   for (i in 1:B) {
     xb  = xx[sample(n, replace = TRUE)]
     mybreaks <- mybreaks(xb, nbr)
-    hs2 = hist_rcpp(xb, breaks = mybreaks, plot = FALSE)
+    hs2 = hist_rcpp(xb, breaks = mybreaks)
     
     mids <- hs2$mids
     delta <- diff(mybreaks)[1]
