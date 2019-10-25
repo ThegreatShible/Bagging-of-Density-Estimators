@@ -1,7 +1,7 @@
 library(parallel)
 library(ks)
 library(devtools)
-install("../CppFunctions")
+#install("../CppFunctions")
 library(CppFunctions)
 
 source("functions2.r")

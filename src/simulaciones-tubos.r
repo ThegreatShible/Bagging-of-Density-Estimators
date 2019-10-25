@@ -4,7 +4,7 @@
 ##              BagHist, Rash, ASH.
 
 library(devtools)
-install("../CppFunctions")
+#install("../CppFunctions")
 library(CppFunctions)
 source("functions2.r")
 library(iterators)

@@ -2,7 +2,7 @@ rm(list=ls())
 source("functions2.R")
 library(parallel)
 library(devtools)
-install("../CppFunctions")
+#install("../CppFunctions")
 library(CppFunctions)
 
 simulaciones=function(n = 100, M = 10, B = 150){

@@ -4,7 +4,7 @@ library("iterators")
 library("parallel")
 source("functions2.r")
 library(devtools)
-install("../CppFunctions")
+#install("../CppFunctions")
 library(CppFunctions)
 rm(list = ls())
 
