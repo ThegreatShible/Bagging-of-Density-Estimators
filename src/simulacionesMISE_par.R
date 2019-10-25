@@ -1,5 +1,8 @@
 library(parallel)
 library(ks)
+library(devtools)
+install("../CppFunctions")
+library(CppFunctions)
 
 source("functions2.r")
 
@@ -47,11 +50,11 @@ vars2export <- c("BagHistfp", "Bagkde", "bropt", "broptfp", "dtriangle", "error"
                  "predict.hist", "predict.hist.x",   "rash", 
                  "riskfp", "riskhist", "rtriangle", "simulaciones")   
 clusterExport(cls, vars2export)
-
-Rprof()
+clusterEvalQ(cls, library(CppFunctions))
+#Rprof()
 res <- simulaciones(n = 50, M = 100, B = 20)
-Rprof(NULL)
-summaryRprof()
+#Rprof(NULL)
+#summaryRprof()
 res
 #res <- parLapplyLB(cls, rev(c(20, 50, 100, 200, 500, 1000, 2000)),
 #              function(n) simulaciones(n = n, M = 100, B = 200))

@@ -1,9 +1,12 @@
 rm(list=ls())
 source("functions2.R")
-
+library(parallel)
+library(devtools)
+install("../CppFunctions")
+library(CppFunctions)
 
 simulaciones=function(n = 100, M = 10, B = 150){
-
+  #print("in simulaciones : ", n)
   vec = c(1,3,5,7,8,11,10,13,17,19,20,21)
   AA = matrix(0, nrow = length(vec), ncol = 7)
   #AA=matrix(0,nrow=2,ncol=7)
@@ -12,8 +15,9 @@ simulaciones=function(n = 100, M = 10, B = 150){
   
   
   for(i in 1:M){
-    A = matrix(NA, nrow = length(vec), ncol = 7)
     print(i)
+    A = matrix(NA, nrow = length(vec), ncol = 7)
+    #print("and m == ", i)
     #A=matrix(NA,nrow=2,ncol=7)
   for(ll in 1:length(vec)){
     
@@ -36,6 +40,7 @@ simulaciones=function(n = 100, M = 10, B = 150){
   }
     AA=AA+A
   }
+  
   AA=AA/M
 }
 
@@ -45,7 +50,6 @@ simulaciones=function(n = 100, M = 10, B = 150){
 #              function(n) simulaciones(n = n, M = 100, B = 200))
 #)
 
-library(parallel)
 vars2export <- c("BagHistfp", "Bagkde", "bropt", "broptfp", "dtriangle", 
                  "dberdev", "error", "ind", "rnorMix", "MW.nm14", "dnorMix",
                  "MW.nm16",
@@ -54,6 +58,7 @@ vars2export <- c("BagHistfp", "Bagkde", "bropt", "broptfp", "dtriangle",
                  "riskhist", "riskfp","rtriangle", "simulaciones")   
 cls <- makeCluster(detectCores() - 1)
 clusterExport(cls, vars2export)
+clusterEvalQ(cls,library(CppFunctions))
 system.file(
   res <- parLapplyLB(cls, rev(c(20, 50, 100, 200, 500, 1000, 2000)),
                      function(n) simulaciones(n = n, M = 100, B = 200))
