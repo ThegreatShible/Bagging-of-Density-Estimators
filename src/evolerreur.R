@@ -1,13 +1,14 @@
 
 rm(list=ls())
-setwd("~/Dropbox/Trabajo/BD_pour_hist/codes")
 source("functions2.r")
-
+library(devtools)
+install("../CppFunctions")
+library(CppFunctions)
 
 #####################
 #Evol. error
 
-evol.error=function(modele=1,n=100,B=200,M=5){
+evol.error <- function(modele=1,n=100,B=200,M=5){
     
     A=matrix(NA,nrow=M,ncol=B)
     C=matrix(NA,nrow=M,ncol=B)
@@ -26,11 +27,20 @@ evol.error=function(modele=1,n=100,B=200,M=5){
     }
 list(A=A,C=C,D=D,E=E)
     }
-
+vars2export <- vars2export <- c( "evol.error", "BagHistfp.err","BagKDE.err","BagHistfp", "kde", "Bagkde",
+                                 "rash.err", "gendata", "mybreaks", "predict.hist", "predict.hist.x",
+                                 "error","melange","mel", "rberdev", "dberdev", "rtriangle", "dtriangle", "ind")   
+cls <- makeCluster(detectCores() - 1)
+clusterExport(cls, vars2export)
+clusterEvalQ(cls,library(CppFunctions))
 system.file(
-  res <- lapply(c(1, 3, 5, 8, 11,13,20,21),
-                function(modele) evol.error(modele = modele, n=500, M = 100, B = 200))
+  res <- parLapply(cls, c(1, 3, 5, 8, 11,13,20,21),
+                   function(modele) evol.error(modele = modele, n=500, M = 100, B = 200))
 )
+stopCluster(cls)
+
+
+
 
 save(res, file = "res_evolerror_new.Rdata")
 
