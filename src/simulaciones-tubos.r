@@ -3,6 +3,15 @@
 ##              tubos de los estimadores de densidad H, FP, Kde, BagHistFP, 
 ##              BagHist, Rash, ASH.
 
+library(devtools)
+install("../CppFunctions")
+library(CppFunctions)
+source("functions2.r")
+library(iterators)
+library(parallel)
+library(doParallel)
+library(foreach)
+
 rm(list = ls())
 source("functions2.R")
 
@@ -159,8 +168,15 @@ simulaciones = function(n = 100,    # data size
                         B = 150){   # number of bootstrapt samples
   estimators <- c("Hist", "FP", "Kde", "Kde_sm", "Kde_M") #, "wass")
   densities  <- c("normal", "chi2", "mix1", "bart", "triangular", "rara1", "rara2", "rara3")
-  var2export <- c("gendata", "tube_hist", "mybreaks", "predict.hist", "predict.hist.x")
-  res <- foreach(i = 1:M, .combine = rbind.data.frame,.export = var2export,.packages = "sm") %:% 
+
+    vars2export <- c("BagHistfp", "Bagkde", "bropt", "broptfp", "dtriangle", 
+                     "dberdev", "error", "ind", "rnorMix", "MW.nm14", "dnorMix",
+                     "MW.nm16", "baseboot" , "tube_fp", "tube_KDEsm","cteboot",
+                     "gendata", "kde", "mel", "melange", "mybreaks", "onekdeucv",
+                     "predict.hist", "predict.hist.x",   "rash", "rberdev", "error_tube",
+                     "riskhist", "riskfp","rtriangle", "simulaciones", "tube_hist", "tube_KDE")   
+  res <- foreach(i = 1:M, .combine = rbind.data.frame,.export = vars2export,
+                 .packages = c("sm", "CppFunctions")) %:% 
     foreach(ll = c(1, 3, 5, 8, 11, 13, 20, 21), .combine = rbind) %dopar% {
 
       dd   <- gendata(ll, n)
@@ -194,8 +210,7 @@ simulaciones = function(n = 100,    # data size
 }  
 
 
-library(foreach)
-library(doParallel)
+
 registerDoParallel(6) #detectCores())
 
 #system.time(S <- simulaciones(n = 200, M = 20, B = 10))

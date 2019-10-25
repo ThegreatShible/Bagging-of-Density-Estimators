@@ -2,6 +2,10 @@
 library("foreach")
 library("iterators")
 library("parallel")
+source("functions2.r")
+library(devtools)
+install("../CppFunctions")
+library(CppFunctions)
 rm(list = ls())
 
 #B nombre d'echantillonage pour le bagging
@@ -10,10 +14,11 @@ rm(list = ls())
 innerFunc <- function(n,M,K,B,numModel) {
   res = matrix(0, nrow = 1, ncol = 21)
   for (m in 1:M) {
+    print(m)
     distributionData = gendata(numModel,n)
     #optimal number of chunks in the histogram
     bopt=broptRcpp(distributionData$train)$opt
-    histogram=hist(distributionData$train,breaks=mybreaks(distributionData$train,nbr=bopt),plot=F)
+    histogram=hist_rcpp(distributionData$train,breaks=mybreaks(distributionData$train,nbr=bopt))
     #O(distributionData.length * histogram.breaks)
     h=predict.hist(histogram,distributionData$test)
     fp=approxfun(x=histogram$mids,y=histogram$density)(distributionData$test)
@@ -193,7 +198,9 @@ sesgo_par = function(n = 100, M = 5, K = 10, B = 10){
                                         "broptfp", "riskfp", "ind",
                                         "predict.hist", "predict.hist.x", "onekdeucv",
                                         "kde", "BagHistfp", "melange", "mel", "rberdev",
-                                        "dberdev", "rtriangle", "dtriangle", "Bagkde", "rash"),
+                                        "dberdev", "rtriangle", "dtriangle", "Bagkde", "rash", 
+                                        "innerFunc" , "onlyTrainGendata"
+                                          ),
                            .packages = "ks") %dopar% {
                              innerFunc(n,M,K,B, numModel)
                              
@@ -214,6 +221,7 @@ sesgo_par = function(n = 100, M = 5, K = 10, B = 10){
 
 library(doParallel)
 cl <- makeCluster(8)
+clusterEvalQ(cl,library(CppFunctions))
 registerDoParallel(cl)
 system.time(aa <- sesgo_par(n = 500, B = 200, K = 100, M = 100))
 #system.time(aa <- sesgo_par(n = 500, B = 10, K = 5, M = 100))
