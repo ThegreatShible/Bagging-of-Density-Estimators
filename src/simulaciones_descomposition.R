@@ -149,35 +149,25 @@ innerFunc <- function(n,M,K,B,numModel) {
 
   
 }
-funcArray <- c(1:7)
-innerFunc2 <- function(n,M,K,B, numModel){
+#innerFunc2 <- function(n,M,K,B, numModel){
   
-}
+#}
 
-Kfunc <- function(n,K, testArray, numModel){
+#Kfunc <- function(n,K, testArray, numModel){
   #TODO implement funcArray, add rray package
   
-  L <- length(testArray)
-  samples <- matrix(onlyTrainGendata(numModel,n*K), nrow=K, ncol=n)
-  predictions <- array(dim = c(7,K,L))
-  tests1 <- array(testArray, dim=c(1,1,L))
-  tests <-  rray_broadcast(tests1, c(7,K,L))
+#  L <- length(testArray)
+#  samples <- matrix(onlyTrainGendata(numModel,n*K), nrow=K, ncol=n)
+#  predictions <- array(dim = c(7,K,L))
+#  tests1 <- array(testArray, dim=c(1,1,L))
+#  tests <-  rray_broadcast(tests1, c(7,K,L))
   #Todo check if for is the solution
-  for (i in (1:length(funcArray))){
-    f <- funcArray(i)
-    funcRes <- f(samples)
-    predictions[i,,] <- funcRes
-  }
-  
-  
-  
-  
-  
-  
-  
-           
-  
-}
+#  for (i in (1:length(funcArray))){
+#    f <- funcArray(i)
+#    funcRes <- f(samples)
+#    predictions[i,,] <- funcRes
+#  }
+#}
   
   
   
