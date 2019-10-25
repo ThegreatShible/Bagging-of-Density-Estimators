@@ -2,9 +2,9 @@
 rm(list=ls())
 source("functions2.r")
 library(devtools)
-install("../CppFunctions")
+#install("../CppFunctions")
 library(CppFunctions)
-
+library(parallel)
 #####################
 #Evol. error
 
@@ -27,7 +27,7 @@ evol.error <- function(modele=1,n=100,B=200,M=5){
     }
 list(A=A,C=C,D=D,E=E)
     }
-vars2export <- vars2export <- c( "evol.error", "BagHistfp.err","BagKDE.err","BagHistfp", "kde", "Bagkde",
+vars2export <- c("BagHistfp.err","BagKDE.err","BagHistfp", "kde", "Bagkde","evol.error",
                                  "rash.err", "gendata", "mybreaks", "predict.hist", "predict.hist.x",
                                  "error","melange","mel", "rberdev", "dberdev", "rtriangle", "dtriangle", "ind")   
 cls <- makeCluster(detectCores() - 1)

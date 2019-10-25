@@ -12,8 +12,9 @@ library(rpart)
 #library(delt)
 library(nor1mix)
 
-sourceCpp("functions.cpp")
-
+library(devtools)
+#install("../CppFunctions")
+library(CppFunctions)
 ##################
 #Mod?les
 ##################
