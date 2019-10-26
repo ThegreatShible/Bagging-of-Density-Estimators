@@ -211,7 +211,7 @@ simulaciones = function(n = 100,    # data size
 
 
 
-registerDoParallel(6) #detectCores())
+registerDoParallel(detectCores()) #detectCores())
 
 #system.time(S <- simulaciones(n = 200, M = 20, B = 10))
 system.time(S <- simulaciones(n = 500, M = 100, B = 200))

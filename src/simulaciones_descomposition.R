@@ -1,4 +1,4 @@
-
+rm(list = ls())
 library("foreach")
 library("iterators")
 library("parallel")
@@ -6,7 +6,7 @@ source("functions2.r")
 library(devtools)
 #install("../CppFunctions")
 library(CppFunctions)
-rm(list = ls())
+
 
 #B nombre d'echantillonage pour le bagging
 # M nombre de d?composition du dataset avec chaque partie contenant n elements
@@ -210,7 +210,7 @@ sesgo_par = function(n = 100, M = 5, K = 10, B = 10){
 }
 
 library(doParallel)
-cl <- makeCluster(8)
+cl <- makeCluster(detectCores())
 clusterEvalQ(cl,library(CppFunctions))
 registerDoParallel(cl)
 system.time(aa <- sesgo_par(n = 500, B = 200, K = 100, M = 100))

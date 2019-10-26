@@ -60,8 +60,12 @@ cls <- makeCluster(detectCores() - 1)
 clusterExport(cls, vars2export)
 clusterEvalQ(cls,library(CppFunctions))
 system.file(
-  res <- parLapplyLB(cls, rev(c(20, 50, 100, 200, 500, 1000, 2000)),
-                     function(n) simulaciones(n = n, M = 100, B = 200))
+  #res <- parLapplyLB(cls, rev(c(20, 50, 100, 200, 500, 1000, 2000)),
+  #                   function(n) simulaciones(n = n, M = 100, B = 200))
+  res <- parLapplyLB(cls, rev(c(20, 50)),
+                     function(n) simulaciones(n = n, M = 10, B = 10))
+  
+  
 )
 stopCluster(cls)
 
