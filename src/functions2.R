@@ -726,39 +726,34 @@ predict.hist.x = function(hh,x1)	{
 #if(x1==lims) res = intens[length(breaks)-1]
 	res
 }
+predict.hist.x.V2 = function(hh,x1)	{
+  breaks = hh$breaks
+  intens = hh$density
+  lb = length(breaks)
+  lims = breaks[lb]
+  if(x1 < breaks[1] || x1 > lims) res= 0
+  else {
+    if(x1 == lims) res = intens[lb-1]
+    else {
+      pos= which(x1 < breaks)[1] - 1
+      res=intens[pos]
+      
+    }
+  }
+  #if(x1==lims) res = intens[length(breaks)-1]
+  res
+}
 
 #O(x * hh.breaks)
 predict.hist = function(hh,x)	{
 	res=NULL
 	for(i in 1:length(x))
-		res[i] = predict.hist.x(hh,x[i])
+		res[i] = predict.hist.x.V2(hh,x[i])
 	res
 }
 
-getDensity <- function(x, densities) {
-  ind <- which(x) - 1
-  if( ind <= 0) return(0)
-  else densities[ind]
-  
-}
 
-predict.hist.x2D <- function(histrogram, x){
-  found = F
-  index = 1
-  L <- length(x)
-  breaks <- histogram$breaks
-  Blen <- length(breaks)
-  rBreaks <- matrix(v,nrow=Blen,ncol=L,byrow=TRUE)
-  densities <- histogram$density
-  mins <- (x <= breaks)
-  apply(mins, 1, function(x) getDensity(mins, densities))
- 
-}
 
-predict.hist2D = function(histograms, x) {
-  
-  apply(histograms,1, function(histogram) predict.hist.x2D(histogram, x))
-}
 
 
 AgregHist = function(xx,grille=aa,nbr = 50, B=10, alpha=1) {
