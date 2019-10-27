@@ -54,7 +54,7 @@ vars2export <- c("BagHistfp", "Bagkde", "bropt", "broptfp", "dtriangle",
                  "dberdev", "error", "ind", "rnorMix", "MW.nm14", "dnorMix",
                  "MW.nm16",
                  "gendata", "kde", "mel", "melange", "mybreaks", "onekdeucv",
-                 "predict.hist", "predict.hist.x",   "rash", "rberdev", 
+                 "predict.hist", "predict.hist.x.V2",   "rash", "rberdev", 
                  "riskhist", "riskfp","rtriangle", "simulaciones")   
 cls <- makeCluster(detectCores() - 1)
 clusterExport(cls, vars2export)

@@ -47,18 +47,15 @@ simulaciones=function(n=100,M=10,B=150){
 cls <- makeCluster(detectCores() - 1)
 vars2export <- c("BagHistfp", "Bagkde", "bropt", "broptfp", "dtriangle", "error", "gendata",         
                  "mel", "melange", "mybreaks", "onekdeucv",
-                 "predict.hist", "predict.hist.x",   "rash", 
+                 "predict.hist", "predict.hist.x.V2",   "rash", 
                  "riskfp", "riskhist", "rtriangle", "simulaciones")   
 clusterExport(cls, vars2export)
 clusterEvalQ(cls, library(CppFunctions))
-#Rprof()
-res <- simulaciones(n = 50, M = 100, B = 20)
-#Rprof(NULL)
-#summaryRprof()
-res
-#res <- parLapplyLB(cls, rev(c(20, 50, 100, 200, 500, 1000, 2000)),
-#              function(n) simulaciones(n = n, M = 100, B = 200))
-#)
+
+system.file(
+  res <- parLapplyLB(cls, rev(c(20, 50, 100, 200, 500, 1000, 2000)),
+                     function(n) simulaciones(n = n, M = 100, B = 200))
+)
 
 stopCluster(cls)
 

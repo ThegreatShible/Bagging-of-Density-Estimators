@@ -173,7 +173,7 @@ simulaciones = function(n = 100,    # data size
                      "dberdev", "error", "ind", "rnorMix", "MW.nm14", "dnorMix",
                      "MW.nm16", "baseboot" , "tube_fp", "tube_KDEsm","cteboot",
                      "gendata", "kde", "mel", "melange", "mybreaks", "onekdeucv",
-                     "predict.hist", "predict.hist.x",   "rash", "rberdev", "error_tube",
+                     "predict.hist", "predict.hist.x.V2",   "rash", "rberdev", "error_tube",
                      "riskhist", "riskfp","rtriangle", "simulaciones", "tube_hist", "tube_KDE")   
   res <- foreach(i = 1:M, .combine = rbind.data.frame,.export = vars2export,
                  .packages = c("sm", "CppFunctions")) %:% 

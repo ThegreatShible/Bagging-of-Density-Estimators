@@ -28,7 +28,7 @@ evol.error <- function(modele=1,n=100,B=200,M=5){
 list(A=A,C=C,D=D,E=E)
     }
 vars2export <- c("BagHistfp.err","BagKDE.err","BagHistfp", "kde", "Bagkde","evol.error",
-                                 "rash.err", "gendata", "mybreaks", "predict.hist", "predict.hist.x",
+                                 "rash.err", "gendata", "mybreaks", "predict.hist", "predict.hist.x.V2",
                                  "error","melange","mel", "rberdev", "dberdev", "rtriangle", "dtriangle", "ind")   
 cls <- makeCluster(detectCores() - 1)
 clusterExport(cls, vars2export)

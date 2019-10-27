@@ -186,7 +186,7 @@ sesgo_par = function(n = 100, M = 5, K = 10, B = 10){
     res0 <- foreach::foreach(numModel = c(1, 3, 5, 8, 11, 13, 20, 21), .combine = rbind, 
                             .export = c("gendata", "bropt", "riskhist", "mybreaks", 
                                         "broptfp", "riskfp", "ind",
-                                        "predict.hist", "predict.hist.x", "onekdeucv",
+                                        "predict.hist", "predict.hist.x.V2", "onekdeucv",
                                         "kde", "BagHistfp", "melange", "mel", "rberdev",
                                         "dberdev", "rtriangle", "dtriangle", "Bagkde", "rash", 
                                         "innerFunc" , "onlyTrainGendata"
